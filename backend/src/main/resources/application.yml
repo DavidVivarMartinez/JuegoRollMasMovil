@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: eclipse-backend
+  config:
+    import: classpath:game-content.yml   # misiones, archivos, objetos y mapa iniciales (prefijo game.*)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/eclipse
+    username: eclipse
+    password: eclipse
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  docker:
+    compose:
+      file: ../compose.yaml
+      lifecycle-management: start-only
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  # 8090 porque el 8080 de este PC lo usa otro contenedor de Docker
+  port: 8090
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    es.eclipse: INFO
+
+app:
+  cors:
+    # Orígenes extra permitidos (el proxy de Vite no lo necesita, pero sí un frontend servido aparte)
+    allowed-origins:
+      - http://localhost:5173
+  join:
+    max-attempts-per-minute: 10
+  realtime:
+    allowed-origin-patterns:
+      - "*"
+  seed:
+    # Crea la partida de ejemplo si la base de datos está vacía.
+    # CAMBIA LOS CÓDIGOS antes de la partida real (variables de entorno APP_SEED_*).
+    enabled: true
+    print-codes: true
+    session-name: "PROTOCOLO: ECLIPSE"
+    master-name: "Máster"
+    master-code: "ECLIPSE-MASTER"
+    players:
+      - name: David
+        character: Ingeniero
+        character-code: ENGINEER
+        code: "ING-7731"
+        infection: 0
+      - name: Laura
+        character: Médica
+        character-code: MEDIC
+        code: "MED-2048"
+        infection: 12
+      - name: Carlos
+        character: Seguridad
+        character-code: SECURITY
+        code: "SEG-0917"
+        infection: 0
+      - name: Ana
+        character: Científica
+        character-code: SCIENTIST
+        code: "CIE-6618"
+        infection: 67

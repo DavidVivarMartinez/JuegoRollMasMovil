@@ -1,0 +1,17 @@
+{
+  "name": "NEXUS-7 Terminal · Protocolo Eclipse",
+  "short_name": "NEXUS-7",
+  "description": "Terminal de tripulación para la partida PROTOCOLO: ECLIPSE",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05080a",
+  "theme_color": "#05080a",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

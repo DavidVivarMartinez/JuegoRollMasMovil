@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* Paleta "terminal de la NEXUS-7" */
+@theme {
+  --color-term-bg: #05080a;
+  --color-term-panel: #0b1216;
+  --color-term-line: #163a2a;
+  --color-term-green: #39ff8a;
+  --color-term-dim: #2a8f5c;
+  --color-term-faint: #15402b;
+  --color-term-amber: #ffb347;
+  --color-term-red: #ff4d4d;
+  --color-term-cyan: #4de3ff;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- base móvil ---------- */
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--color-term-bg);
+  color: var(--color-term-green);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none; /* sin "tirar para recargar" */
+}
+
+#root {
+  height: 100%;
+}
+@supports (height: 100dvh) {
+  #root {
+    height: 100dvh; /* altura real con la barra del navegador móvil */
+  }
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+/* 16px mínimo en campos: evita que iOS haga zoom al enfocar */
+input,
+textarea,
+select {
+  font-size: 16px;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation; /* sin retardo de doble toque */
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Las zonas de interfaz no se seleccionan ni muestran el menú de copiar al mantener pulsado */
+header,
+nav,
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Zonas seguras (notch, barra de gestos) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Líneas de barrido de monitor CRT */
+.scanlines::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  8% { opacity: 0.75; transform: translateX(-1px); }
+  10% { opacity: 1; }
+  52% { opacity: 0.6; transform: translateX(1px); }
+  55% { opacity: 1; transform: translateX(0); }
+}
+.glitch { animation: flicker 1.6s infinite; }
+
+@keyframes pulse-red {
+  0%, 100% { background-color: rgba(255, 77, 77, 0.25); }
+  50% { background-color: rgba(255, 77, 77, 0.65); }
+}
+.alert-flash { animation: pulse-red 0.9s ease-in-out infinite; }
+
+@keyframes blink { 50% { opacity: 0; } }
+.blink { animation: blink 1s step-end infinite; }
+
+@keyframes slide-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-in { animation: slide-in 0.25s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch, .alert-flash, .blink, .slide-in { animation: none; }
+  .alert-flash { background-color: rgba(255, 77, 77, 0.5); }
+}

@@ -1,0 +1,22 @@
+# PostgreSQL para desarrollo local. El backend lo arranca solo (spring-boot-docker-compose)
+# o puedes lanzarlo a mano con:  docker compose up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: eclipse-postgres
+    environment:
+      POSTGRES_DB: eclipse
+      POSTGRES_USER: eclipse
+      POSTGRES_PASSWORD: eclipse
+    ports:
+      - "5432:5432"
+    volumes:
+      - eclipse-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eclipse -d eclipse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  eclipse-pgdata:

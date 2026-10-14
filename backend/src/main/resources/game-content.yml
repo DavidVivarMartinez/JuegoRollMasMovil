@@ -1,0 +1,420 @@
+# =====================================================================
+#  PROTOCOLO: ECLIPSE — contenido inicial de la partida
+#  Se carga una sola vez por partida (cuando no hay misiones creadas).
+#  Todo es editable después desde el panel del máster.
+#  Estados: misiones HIDDEN/ACTIVE/DONE/FAILED · archivos HIDDEN/UNLOCKED/CORRUPTED
+#  Sectores: UNKNOWN/OPEN/LOCKED/QUARANTINE/DANGER/DESTROYED
+# =====================================================================
+game:
+  shared-missions:
+    - code: FIND_NEXUS7
+      title: Localizar la NEXUS-7
+      status: ACTIVE
+      description: >-
+        La nave científica NEXUS-7 desapareció hace 11 días tras investigar una señal procedente
+        de esta estación. Confirmad su posición y el estado de su tripulación.
+    - code: RESTORE_POWER
+      title: Restaurar la energía
+      status: ACTIVE
+      description: >-
+        El reactor funciona en modo de reserva. Sin potencia completa no se pueden abrir las compuertas
+        del nivel inferior ni activar el sistema de atraque.
+    - code: RECOVER_DATA
+      title: Recuperar los datos
+      status: ACTIVE
+      description: >-
+        La corporación exige el volcado íntegro del laboratorio central. Prioridad: registros del
+        proyecto en curso.
+    - code: FIND_OUT
+      title: Descubrir qué ocurrió
+      status: ACTIVE
+      description: >-
+        Las cámaras registran movimiento en zonas que deberían estar vacías. Determinad qué pasó con
+        el personal de la estación.
+    - code: EVAC_SHIP
+      title: Activar la nave de evacuación
+      status: HIDDEN
+      description: >-
+        La nave de evacuación necesita potencia del reactor y el código del protocolo de evacuación.
+        Solo hay plazas para cuatro.
+    - code: DECIDE_ECLIPSE
+      title: Decidir qué hacer con ECLIPSE
+      status: HIDDEN
+      description: >-
+        Destruir la estación, extraer una muestra o intentar comunicarse. No hay una opción sin coste.
+
+  shared-files:
+    - code: STATION_NOTICE
+      title: Aviso automático de la estación
+      classification: PUBLIC
+      status: UNLOCKED
+      body: |
+        >> TRANSMISIÓN AUTOMÁTICA · ESTACIÓN EREBUS-ORBITAL · CICLO 4471
+
+        PROTOCOLO DE CONTENCIÓN BIOLÓGICA ACTIVADO.
+        Personal no autorizado deberá abandonar inmediatamente la estación.
+
+        ADVERTENCIA.
+        La tripulación de NEXUS-7 no debe ser considerada humana.
+
+        >> FIN DE LA TRANSMISIÓN · REPETICIÓN EN 00:30:00
+    - code: SCIENCE_LOG_41
+      title: Diario del jefe científico · entrada 41
+      classification: RESTRICTED
+      status: HIDDEN
+      body: |
+        Entrada 41. Dra. Imara Vey, jefa científica.
+
+        Lo que las perforadoras sacaron del estrato 9 no es mineral. Tampoco es un virus, por mucho
+        que Halvorsen insista. Reconstruye tejido muerto. Lo hace usando lo que queda en el tejido:
+        recuerdos, patrones, hábitos. El ratón de la jaula 3 volvió a recorrer su laberinto sin un
+        solo error. Llevaba catorce horas muerto.
+
+        Halvorsen quiere probarlo con el cuerpo de Oyelaran. Yo quiero cerrar el sector 17 y pedir
+        una evacuación. Lo hemos votado. He perdido.
+
+        Lo llamaremos ECLIPSE. Es una forma de hablar de ello sin decir lo que es.
+    - code: INFECTION_PHASES
+      title: Registro médico · progresión del huésped
+      classification: RESTRICTED
+      status: HIDDEN
+      body: |
+        PROGRESIÓN OBSERVADA EN HUÉSPEDES VIVOS (n = 6)
+
+        FASE 1 · CONTAMINACIÓN
+        Sin síntomas visibles. Marcadores detectables únicamente mediante cribado profundo.
+
+        FASE 2 · ALTERACIÓN
+        Errores de memoria reciente. Confusión. Cambios de personalidad sutiles que el propio huésped
+        no percibe. Los compañeros sí.
+
+        FASE 3 · SINCRONIZACIÓN
+        El organismo asume el control de grupos musculares. Temblores, gestos repetidos, pausas largas.
+        El huésped lo racionaliza.
+
+        FASE 4 · ECLIPSE
+        El huésped conserva lenguaje, recuerdos y afectos. No se ha podido determinar si conserva algo
+        más. Recomendación: no considerarlo humano.
+
+        NOTA: un huésped en cualquier fase puede hablar, razonar y mentir. Y puede no saber que lo está.
+    - code: NEXUS7_MANIFEST
+      title: Manifiesto de la NEXUS-7
+      classification: PUBLIC
+      status: HIDDEN
+      body: |
+        NAVE CIENTÍFICA NEXUS-7 · REGISTRO CORPORATIVO 88-K
+        Tripulación: 5. Misión: investigación de señal anómala, órbita de Erebus.
+
+        CMDT. Rhee, Soo-ah
+        OF. Castellanos, Mateo
+        DRA. Nwosu, Adaeze
+        TÉC. Lindqvist, Pär
+        TÉC. Amari, Youssef
+
+        Último mensaje recibido (hace 11 días, 03:14 hora de a bordo):
+        "Hemos atracado. Las luces están encendidas. Hay alguien en el puente. Nos está saludando."
+    - code: EVAC_PROTOCOL
+      title: Protocolo de evacuación · nivel inferior
+      classification: RESTRICTED
+      status: HIDDEN
+      body: |
+        SECUENCIA DE ACTIVACIÓN DE LA NAVE DE EVACUACIÓN
+
+        1. Reactor al 60 % o superior.
+        2. Desbloquear la esclusa del nivel inferior desde el puente de mando.
+        3. Introducir el código de autorización en la consola de la nave.
+        4. Ocupar los asientos. La secuencia de desacople dura 180 segundos y NO puede abortarse.
+
+        CÓDIGO DE AUTORIZACIÓN: 7-7-3-1-EREBUS
+        Capacidad: 4 ocupantes. Los asientos restantes carecen de soporte vital.
+    - code: SECURITY_LOG
+      title: Registro de seguridad · hace 6 meses
+      classification: CLASSIFIED
+      status: HIDDEN
+      body: |
+        INCIDENTE 0219 · SECTOR 17 · TURNO DE NOCHE
+
+        Agente de seguridad abre fuego contra un miembro del equipo científico dentro de la zona de
+        cuarentena. El agente declara que el científico "ya no era él". El científico había sido
+        declarado muerto 31 horas antes.
+
+        El agente es evacuado, sedado y sometido a cribado. Resultado: negativo.
+        Resolución corporativa: borrado de la participación del agente en el proyecto. Reasignación.
+
+        Nombre del agente: [SUPRIMIDO POR ORDEN 7-ALFA]
+
+  # Coordenadas en una rejilla de 100x100 (casillas de 16x10): columnas en x = 10, 30, 50, 70, 90.
+  # La posición y los enlaces se sincronizan en cada arranque; el estado y la nota no se tocan.
+  sectors:
+    - code: HANGAR
+      name: Hangar de atraque
+      status: OPEN
+      x: 10
+      y: 50
+      links: CORREDOR_A
+      note: Vuestro transporte sigue acoplado. Luces de emergencia activas.
+    - code: CORREDOR_A
+      name: Corredor principal
+      status: OPEN
+      x: 30
+      y: 50
+      links: PUENTE,ENFERMERIA,ALMACEN,SECTOR_17
+      note: Marcas de arrastre en el suelo en dirección al sector 17.
+    - code: PUENTE
+      name: Puente de mando
+      status: UNKNOWN
+      x: 50
+      y: 20
+      links: LAB
+    - code: ENFERMERIA
+      name: Enfermería
+      status: UNKNOWN
+      x: 50
+      y: 50
+      links: LAB
+    - code: ALMACEN
+      name: Almacén
+      status: UNKNOWN
+      x: 50
+      y: 80
+      links: REACTOR
+    - code: SECTOR_17
+      name: Sector 17
+      status: LOCKED
+      x: 30
+      y: 80
+      links: MINAS
+      note: Compuerta sellada. Requiere código o autorización de seguridad.
+    - code: LAB
+      name: Laboratorio central
+      status: LOCKED
+      x: 70
+      y: 35
+      links: NEXUS7
+      note: Cierre de contención activo.
+    - code: REACTOR
+      name: Núcleo del reactor
+      status: UNKNOWN
+      x: 70
+      y: 80
+      links: EVAC
+    - code: MINAS
+      name: Acceso a las minas
+      status: UNKNOWN
+      x: 10
+      y: 80
+    - code: NEXUS7
+      name: Atraque de la NEXUS-7
+      status: UNKNOWN
+      x: 90
+      y: 35
+    - code: EVAC
+      name: Nave de evacuación
+      status: UNKNOWN
+      x: 90
+      y: 80
+
+  characters:
+    ENGINEER:
+      missions:
+        - code: REPAIR_SYSTEMS
+          kind: OFFICIAL
+          title: Reparar los sistemas de la estación
+          status: ACTIVE
+          description: >-
+            Devolver la operatividad a la red eléctrica, las compuertas y el sistema de atraque.
+            Sin ti nadie sale de aquí.
+        - code: CORP_ORDER
+          kind: SECRET
+          title: Orden 7-ALFA (confidencial)
+          status: ACTIVE
+          description: >-
+            Antes de partir recibiste un archivo cifrado de la corporación. La misión real es recuperar
+            el organismo catalogado como ECLIPSE. Si encuentras muestras, consérvalas. Aunque haya
+            supervivientes. Nadie más conoce esta orden.
+      items:
+        - name: Kit de reparación
+          description: Herramientas y piezas para una reparación de campo. Dos usos.
+          quantity: 2
+          usable: true
+          consumable: true
+        - name: Terminal de diagnóstico
+          description: Lee el estado de cualquier sistema de la estación al que te conectes.
+          usable: true
+        - name: Linterna
+          description: Luz de 200 lúmenes. Batería al 80 %.
+          usable: false
+      files:
+        - code: CORP_DIRECTIVE
+          title: Directiva 7-ALFA · Proyecto ECLIPSE
+          classification: CLASSIFIED
+          status: UNLOCKED
+          body: |
+            DE: Dirección de Activos Biológicos
+            PARA: Ingeniero jefe, misión de recuperación EREBUS
+            CLASIFICACIÓN: 7-ALFA · SOLO LECTOR AUTORIZADO
+
+            La estación EREBUS-ORBITAL alberga un activo biológico de valor incalculable, nombre en
+            clave ECLIPSE. El objetivo real de su misión es la recuperación de al menos una muestra viable.
+
+            Instrucciones:
+            · No comparta esta directiva con el resto del equipo.
+            · El laboratorio central dispone de contenedores de transporte homologados.
+            · La supervivencia de terceros es deseable pero no prioritaria.
+            · A su regreso será compensado conforme a la tabla 7-ALFA/4.
+
+            Esta directiva se autodestruirá al finalizar la misión.
+
+    MEDIC:
+      missions:
+        - code: EVALUATE_SURVIVORS
+          kind: OFFICIAL
+          title: Evaluar a los supervivientes
+          status: ACTIVE
+          description: >-
+            Determinar el estado médico de cualquier superviviente de la estación o de la NEXUS-7 y
+            decidir si puede viajar con vosotros.
+        - code: MARKERS
+          kind: SECRET
+          title: Marcadores anómalos
+          status: ACTIVE
+          description: >-
+            Una transmisión médica previa al despegue indica que uno de los miembros del equipo presenta
+            marcadores compatibles con infección. No sabes quién. Observa, confirma y solo entonces informa.
+      items:
+        - name: Botiquín
+          description: Estabiliza heridas y detiene hemorragias. Dos usos.
+          quantity: 2
+          usable: true
+          consumable: true
+        - name: Escáner biométrico portátil
+          description: Lectura rápida de constantes y marcadores. No es un cribado profundo.
+          usable: true
+        - name: Sedantes
+          description: Dosis única. Deja fuera de combate a un adulto durante una hora.
+          quantity: 1
+          usable: true
+          consumable: true
+      files:
+        - code: PRE_SCREEN
+          title: Cribado médico pre-misión
+          classification: RESTRICTED
+          status: UNLOCKED
+          body: |
+            CRIBADO DE EMBARQUE · TRANSPORTE DE RECUPERACIÓN · 4 SUJETOS
+
+            MUESTRA 1 · negativo
+            MUESTRA 2 · negativo
+            MUESTRA 3 · NO CONCLUYENTE · marcadores compatibles con contaminación de fase 1 · repetir
+            MUESTRA 4 · negativo
+
+            NOTA DEL LABORATORIO: las muestras se anonimizaron por protocolo. La correspondencia
+            muestra/sujeto no se adjunta a este informe.
+
+    SECURITY:
+      missions:
+        - code: KEEP_ALIVE
+          kind: OFFICIAL
+          title: Mantener viva a la tripulación
+          status: ACTIVE
+          description: >-
+            Eres el único con formación táctica. Decide cuándo se avanza, cuándo se retrocede y
+            cuándo se cierra una puerta.
+        - code: BEEN_HERE
+          kind: SECRET
+          title: Ya has estado aquí
+          status: ACTIVE
+          description: >-
+            Hace seis meses formabas parte del equipo de seguridad de esta estación. La corporación
+            borró tu participación. Recuerdas haber matado a alguien. No recuerdas por qué.
+      items:
+        - name: Pistola de aturdimiento
+          description: Tres cargas. Inmoviliza, no mata.
+          quantity: 3
+          usable: true
+          consumable: true
+        - name: Tarjeta de acceso · nivel 2
+          description: Abre compuertas de seguridad de nivel 2 o inferior.
+          usable: true
+        - name: Bengala
+          description: Luz intensa durante 60 segundos. Un uso.
+          quantity: 1
+          usable: true
+          consumable: true
+      files:
+        - code: SERVICE_RECORD
+          title: Expediente de servicio · EREBUS
+          classification: CLASSIFIED
+          status: CORRUPTED
+          body: |
+            EXPEDIENTE DE SERVICIO · DESTINO: EREBUS-ORBITAL · DURACIÓN: 4 MESES
+
+            Agente asignado a la cuarentena del sector 17. Evaluaciones: satisfactorias.
+            Incidente 0219: el agente abre fuego contra un miembro del equipo científico que había sido
+            declarado muerto 31 horas antes. El agente declara que el científico ya no era él.
+
+            Cribado posterior: negativo. Sedación. Evacuación.
+            Resolución: borrado de memoria selectivo autorizado por orden 7-ALFA. Reasignación.
+
+            Observación del médico: el agente pregunta por el científico cada mañana. Cada mañana
+            le decimos que no conoce a nadie con ese nombre.
+
+    SCIENTIST:
+      missions:
+        - code: RECOVER_SCIENCE
+          kind: OFFICIAL
+          title: Recuperar los datos científicos
+          status: ACTIVE
+          description: >-
+            Eres la única capaz de interpretar lo que haya en el laboratorio central. Recupera los
+            registros del proyecto y determina qué estaban investigando.
+        - code: ACCIDENT
+          kind: SECRET
+          title: El accidente
+          status: ACTIVE
+          description: >-
+            Durante el viaje sufriste un accidente en la bodega 2. Despertaste horas después en la
+            enfermería del transporte, sin heridas. Nadie te ha explicado qué pasó y los registros de
+            ese tramo del viaje están vacíos.
+      items:
+        - name: Tableta de datos
+          description: Descifra y almacena registros del laboratorio.
+          usable: true
+        - name: Contenedor de muestras
+          description: Aislamiento biológico de clase 4. Capacidad para una muestra.
+          usable: true
+        - name: Linterna
+          description: Luz de 200 lúmenes. Batería al 100 %.
+          usable: false
+      files:
+        - code: TRIP_INCIDENT
+          title: Registro del incidente · bodega 2
+          classification: RESTRICTED
+          status: HIDDEN
+          body: |
+            REGISTRO MÉDICO AUTOMÁTICO · TRANSPORTE DE RECUPERACIÓN · DÍA 3 DE VIAJE
+
+            04:12:40 · Caída detectada en bodega 2. Sujeto: científica de la misión.
+            04:12:58 · Constantes vitales: AUSENTES.
+            04:13:00 · Alerta enviada a la tripulación. Sin respuesta (ciclo de descanso).
+            ..........
+            04:55:17 · Constantes vitales: RESTABLECIDAS. Sin intervención registrada.
+            04:55:20 · Sujeto consciente. Sujeto se incorpora. Sujeto pregunta la hora.
+
+            Duración de la ausencia de constantes: 00:42:17.
+            Este registro ha sido marcado para borrado por orden 7-ALFA.
+        - code: PATIENT_01
+          title: Paciente ECLIPSE-01
+          classification: CLASSIFIED
+          status: HIDDEN
+          body: |
+            PACIENTE ECLIPSE-01 · PRIMER HUÉSPED HUMANO ESTABLE
+
+            Fallecimiento confirmado. Reconstrucción completa en menos de una hora. El sujeto conserva
+            memoria, lenguaje, afectos y competencias profesionales. No presenta conciencia de su estado.
+
+            Lectura biométrica: errores intermitentes. Sincronización: 67 % y en aumento.
+
+            El sujeto no está en la estación. El sujeto viaja hacia la estación.
+
+  # fin
