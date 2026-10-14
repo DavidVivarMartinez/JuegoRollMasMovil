@@ -43,6 +43,11 @@ Todo se controla desde el móvil del máster, pestaña **MESA**:
 
 La tele solo puede leer (rol `DISPLAY`): no ve mensajes privados, misiones ni secretos, y el plano lo ve como los jugadores.
 
+### Mapas generados con IA
+
+`tools/mapas-ia/generar.mjs` genera los mapas de cada zona con Stable Diffusion en local (ComfyUI y el modelo
+D&D Battlemaps SDXL, gratis) y los sube a la partida. Instrucciones en [tools/mapas-ia/README.md](tools/mapas-ia/README.md).
+
 ## Contenido de la partida
 
 Todo el contenido inicial está en `backend/src/main/resources/game-content.yml` y se carga una vez por partida

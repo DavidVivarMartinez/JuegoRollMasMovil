@@ -1,5 +1,9 @@
 # Mapas de la estación con IA (gratis)
 
+> **Automático en este PC**: `tools/mapas-ia/` genera todas las zonas con Stable Diffusion en local (RTX 2070) y las
+> sube a la partida. Ver [tools/mapas-ia/README.md](../tools/mapas-ia/README.md). Esta guía es la alternativa manual con
+> generadores web gratuitos.
+
 Mapas cenitales con el estilo de "battlemap pintado" para la pantalla de mesa. Se generan con una IA de imágenes
 gratuita, se suben desde **MESA → SUBIR MAPA** y encima van nuestras fichas, la niebla y los efectos.
 

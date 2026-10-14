@@ -1,0 +1,63 @@
+{
+  "estilo": "top-down view, battlemap, tabletop rpg map seen from directly above, abandoned sci-fi mining space station, riveted metal floor plates, grime, cables and debris on the floor, dark horror atmosphere, cold flickering fluorescent lights, small red emergency lights, deep black shadows, volumetric haze, highly detailed, painterly digital art, dark teal and amber palette",
+  "negativo": "perspective, isometric, side view, first person, people, person, character, creature, text, letters, words, watermark, signature, logo, frame, border, white border, vignette frame, grid, blurry, lowres, jpeg artifacts, fantasy, medieval, wood planks, grass, trees, castle",
+  "ancho": 1344,
+  "alto": 768,
+  "zonas": [
+    {
+      "id": "hangar",
+      "nombre": "Hangar de atraque",
+      "prompt": "large spaceship docking hangar, small crew transport ship parked on the left, yellow landing markings painted on the floor, cargo crates, fuel hoses, airlock door on the right side, amber warning beacons"
+    },
+    {
+      "id": "corredor",
+      "nombre": "Corredor principal",
+      "prompt": "long industrial corridor crossing the image horizontally, several sliding doors on both walls, pools of light from ceiling panels, dark blood drag marks on the floor leading to a sealed door, overturned maintenance cart"
+    },
+    {
+      "id": "puente",
+      "nombre": "Puente de mando",
+      "prompt": "spaceship command bridge, horseshoe of control consoles with glowing screens, empty swivel chairs, large dark viewport window at the top, scattered tablets, one console glowing blue"
+    },
+    {
+      "id": "enfermeria",
+      "nombre": "Enfermería",
+      "prompt": "sci-fi medical bay, six hospital beds with rumpled white sheets, examination table under a surgical lamp, open medicine cabinets, overturned IV stand, one bed with restraint straps"
+    },
+    {
+      "id": "almacen",
+      "nombre": "Almacén",
+      "prompt": "sci-fi storage warehouse, rows of metal shelving units, stacked supply containers and barrels, a forklift, narrow aisles, one container burst open from the inside, dim amber lights"
+    },
+    {
+      "id": "sector17",
+      "nombre": "Sector 17",
+      "prompt": "biological quarantine area, heavy blast door with yellow and black hazard stripes, decontamination chamber, isolation cells with glass walls, one cracked glass cell, red rotating quarantine lights, biohazard symbols painted on the floor"
+    },
+    {
+      "id": "laboratorio",
+      "nombre": "Laboratorio central",
+      "prompt": "biological research laboratory, workbenches with scientific equipment, tall glass containment tanks along the walls, one tank holding a dark organic mass glowing violet, specimen jars, microscopes, cold blue light and violet bioluminescence"
+    },
+    {
+      "id": "reactor",
+      "nombre": "Núcleo del reactor",
+      "prompt": "circular reactor chamber, huge glowing orange reactor core in the center, metal catwalks with railings around it, thick pipes, coolant tanks, steam vents, control panel with warning lights"
+    },
+    {
+      "id": "minas",
+      "nombre": "Acceso a las minas",
+      "prompt": "mining access area where the metal floor turns into raw dark rock, mine shaft entrance with a cage elevator, drilling machines, rails for ore carts, rocky tunnels fading into darkness, hanging work lamps"
+    },
+    {
+      "id": "nexus7",
+      "nombre": "Atraque de la NEXUS-7",
+      "prompt": "docking bay with a sleek white research spaceship docked, boarding ramp lowered with lights on, personal belongings scattered on the ramp, a single chair facing the ship entrance"
+    },
+    {
+      "id": "evacuacion",
+      "nombre": "Nave de evacuación",
+      "prompt": "interior of a small escape shuttle, four crash seats with harnesses, cockpit with launch console, storage lockers, red countdown display glowing, narrow hatch at the back"
+    }
+  ]
+}
