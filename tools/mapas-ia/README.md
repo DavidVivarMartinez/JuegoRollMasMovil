@@ -11,7 +11,7 @@ Sin cuentas, sin límites y sin coste.
 | Modelo **D&D Battlemaps SDXL 1.0** (SDXL entrenado para mapas de mesa vistos desde arriba, ~6,6 GB) | `...\ComfyUI\models\checkpoints\` |
 
 Licencia del modelo: CreativeML Open RAIL++-M con restricciones adicionales (uso personal sin problema).
-Para desinstalar basta con borrar las dos carpetas `C:\Users\david\ComfyUI_windows_portable` y `C:\Users\david\ComfyUI-descargas`.
+Para desinstalar basta con borrar la carpeta `C:\Users\david\ComfyUI_windows_portable` (unos 11 GB con el modelo).
 
 ## Uso
 
