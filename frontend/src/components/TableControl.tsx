@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../lib/api";
+import { displayWindowUrl } from "../lib/auth";
 import {
   ensureScene,
   FOG_DENSITIES,
@@ -9,6 +10,7 @@ import {
   TOKEN_PALETTE,
 } from "../lib/display";
 import { prepareImage, useMapImage } from "../lib/mapImages";
+import { canPickScreens, listScreens, openTvWindow, type ScreenInfo } from "../lib/screens";
 import type { DisplayFog, DisplayScene, DisplayState, MapImage, OverlayType, PlayerSummary, Sector } from "../lib/types";
 import { Chip } from "./ContentManagers";
 import Icon from "./Icon";
@@ -163,6 +165,8 @@ export default function TableControl({
 
   return (
     <Layer onClose={onClose} tvOnline={tvOnline}>
+      <TvLauncher tvOnline={tvOnline} onError={onError} onNotice={onNotice} />
+
       {/* escena */}
       <Section title="ESCENA EN LA TV">
         <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
@@ -488,5 +492,127 @@ function ToolButton({ active, onClick, children }: { active: boolean; onClick: (
     >
       {children}
     </button>
+  );
+}
+
+// ---------------------------------------------------------------- abrir la TV en este ordenador
+
+function TvLauncher({
+  tvOnline,
+  onError,
+  onNotice,
+}: {
+  tvOnline: boolean;
+  onError: (e: unknown) => void;
+  onNotice: (text: string) => void;
+}) {
+  const [screens, setScreens] = useState<ScreenInfo[] | null>(null);
+  const [detecting, setDetecting] = useState(false);
+  const pickable = canPickScreens();
+
+  const detect = async () => {
+    setDetecting(true);
+    try {
+      // si se cierra la petición de permiso sin responder, la promesa no termina nunca: se corta a los 30 s
+      const timeout = new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("timeout")), 30000));
+      setScreens(await Promise.race([listScreens(), timeout]));
+    } catch {
+      setScreens([]);
+    } finally {
+      setDetecting(false);
+    }
+  };
+
+  const open = async (screen?: ScreenInfo) => {
+    if (tvOnline && !window.confirm("Ya hay una tele conectada. Si la abres aquí, la otra se desconectará. ¿Seguir?")) return;
+    // la ventana se abre en el mismo clic (si no, el navegador la bloquea) y luego se le da el acceso
+    const win = openTvWindow(screen);
+    if (!win) {
+      onError(new Error("El navegador ha bloqueado la ventana: permite las ventanas emergentes para esta web"));
+      return;
+    }
+    try {
+      win.document.title = "NEXUS-7 · PANTALLA";
+      win.document.body.style.cssText = "margin:0;background:#000;color:#39ff8a;font:16px monospace;display:flex;align-items:center;justify-content:center;height:100vh";
+      win.document.body.textContent = "ENLAZANDO PANTALLA…";
+    } catch {
+      // ventana ya cargada con la TV: se recarga abajo
+    }
+    try {
+      const r = await api.master.displayLink();
+      win.location.href = displayWindowUrl({
+        token: r.token,
+        role: r.role,
+        playerId: r.playerId,
+        sessionId: r.sessionId,
+        name: r.name,
+        characterName: r.characterName,
+      });
+      win.focus();
+      onNotice(screen ? `TV ABIERTA EN ${screen.label.toUpperCase()}` : "TV ABIERTA EN UNA VENTANA NUEVA");
+    } catch (e) {
+      win.close();
+      onError(e);
+    }
+  };
+
+  return (
+    <Section title="TV EN ESTE ORDENADOR">
+      <p className="mb-2 text-[11px] leading-relaxed text-term-dim">
+        {tvOnline
+          ? "La tele está conectada. Si quieres usar otra pantalla de este ordenador, ábrela aquí."
+          : "Ninguna pantalla muestra la mesa. Ábrela en el monitor extra de este ordenador, o entra con el código de la PANTALLA en el ordenador de la tele."}
+      </p>
+      {pickable && screens === null && (
+        <button
+          type="button"
+          disabled={detecting}
+          onClick={() => void detect()}
+          className="mb-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded border border-term-green/70 text-[11px] tracking-widest disabled:opacity-40"
+        >
+          <Icon name="tv" className="h-4 w-4" />
+          {detecting ? "BUSCANDO PANTALLAS…" : "ELEGIR PANTALLA"}
+        </button>
+      )}
+      {screens && screens.length === 0 && (
+        <p className="mb-2 rounded border border-term-amber/60 bg-term-amber/10 px-3 py-2 text-[11px] leading-relaxed text-term-amber">
+          El navegador no ha dado permiso para ver las pantallas. Abre la TV en una ventana y arrástrala al otro monitor, o permite
+          «Gestión de ventanas» en el candado de la barra de direcciones y recarga.
+        </p>
+      )}
+      {screens && screens.length > 0 && (
+        <ul className="mb-2 space-y-1.5">
+          {screens.map((s) => (
+            <li key={s.index} className="flex items-center justify-between gap-2 rounded border border-term-line/70 px-2 py-1.5">
+              <div className="min-w-0">
+                <div className="truncate text-sm">{s.label}</div>
+                <div className="text-[9px] tracking-widest text-term-dim">
+                  {s.width}×{s.height}
+                  {s.isCurrent ? " · ESTA PANTALLA" : ""}
+                  {s.isPrimary ? " · PRINCIPAL" : ""}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void open(s)}
+                className={`min-h-[40px] shrink-0 rounded border px-3 text-[11px] tracking-widest ${s.isCurrent ? "border-term-line text-term-dim" : "border-term-green bg-term-green/10"}`}
+              >
+                ABRIR AQUÍ
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button
+        type="button"
+        onClick={() => void open()}
+        className="min-h-[40px] w-full rounded border border-dashed border-term-line text-[11px] tracking-widest text-term-dim"
+      >
+        ABRIR EN UNA VENTANA (LA ARRASTRAS TÚ)
+      </button>
+      <p className="mt-2 text-[10px] leading-relaxed text-term-faint">
+        En la ventana de la TV: doble clic o tecla F para pantalla completa.
+      </p>
+    </Section>
   );
 }

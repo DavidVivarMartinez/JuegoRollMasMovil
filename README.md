@@ -22,7 +22,14 @@ el máster controla la partida (también desde el móvil) y todo cambia en tiemp
 
 ## Pantalla de mesa (TV)
 
-Para la tele conectada al ordenador de la mesa. El ordenador abre la web y entra con el código de la pantalla
+Para la tele conectada al ordenador de la mesa, o para el monitor extra del portátil del máster.
+
+**Desde el portátil del máster con un segundo monitor**: en **MESA → TV EN ESTE ORDENADOR**, pulsa **ELEGIR PANTALLA**
+(Chrome y Edge piden permiso de «Gestión de ventanas» la primera vez) y **ABRIR AQUÍ** en el monitor extra. En otros navegadores,
+**ABRIR EN UNA VENTANA** y arrástrala. La ventana de la TV tiene su propia sesión: tu panel de máster sigue abierto.
+Doble clic o tecla **F** para pantalla completa.
+
+**Desde otro ordenador**: El ordenador abre la web y entra con el código de la pantalla
 (`PANTALLA-MESA` por defecto, cámbialo en **ESTACIÓN → CÓDIGOS DE ACCESO**); pulsa **PANTALLA COMPLETA** y ya no hace falta tocarlo.
 Todo se controla desde el móvil del máster, pestaña **MESA**:
 
@@ -168,6 +175,7 @@ frontend/
 | POST | `/api/master/players/{id}/code` | máster | Cambiar `{code}` o generar el código de un participante |
 | GET | `/api/display/bootstrap` | TV y máster | Estado de la mesa, mapas, plano y sesión |
 | GET | `/api/display/maps/{id}/image` | TV y máster | Imagen de un mapa |
+| POST | `/api/master/display/link` | máster | Acceso de la pantalla para abrirla en otra ventana (desconecta la TV que hubiera) |
 | PUT | `/api/master/display` | máster | Estado completo de la mesa (el servidor lo acota y corrige) |
 | POST / DELETE | `/api/master/maps[/{id}]` | máster | Subir (`?name&width&height`, cuerpo = imagen) o borrar un mapa |
 | GET | `/api/master/overview` | máster | Jugadores, conexión, estado oculto y módulos |

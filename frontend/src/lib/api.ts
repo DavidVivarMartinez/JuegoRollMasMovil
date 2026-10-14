@@ -167,6 +167,8 @@ export const api = {
     deleteFile: (id: number) => request<void>("DELETE", `/api/master/files/${id}`),
 
     saveDisplay: (state: DisplayState) => request<DisplayState>("PUT", "/api/master/display", state),
+    /** Acceso de la pantalla de mesa para abrirla en otra ventana o monitor (desconecta la TV que hubiera). */
+    displayLink: () => request<JoinResponse>("POST", "/api/master/display/link"),
     uploadMap: (image: Blob, name: string, width: number, height: number) =>
       send<MapImage>(
         "POST",

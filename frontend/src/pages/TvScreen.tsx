@@ -24,6 +24,7 @@ export default function TvScreen() {
   const [failed, setFailed] = useState(false);
   const [fullscreen, setFullscreen] = useState(() => !!document.fullscreenElement);
   const [idle, setIdle] = useState(false);
+  const [hint, setHint] = useState(true);
   const idleTimer = useRef<number | undefined>(undefined);
 
   useWakeLock();
@@ -73,6 +74,22 @@ export default function TvScreen() {
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) void document.exitFullscreen?.().catch(() => undefined);
+    else void document.documentElement.requestFullscreen?.().catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "f" || e.key === "F") toggleFullscreen();
+    };
+    window.addEventListener("keydown", onKey);
+    const t = window.setTimeout(() => setHint(false), 10000);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.clearTimeout(t);
+    };
+  }, [toggleFullscreen]);
+
   const wake = () => {
     setIdle(false);
     window.clearTimeout(idleTimer.current);
@@ -96,6 +113,7 @@ export default function TvScreen() {
       className={`fixed inset-0 select-none overflow-hidden bg-black text-term-green ${idle ? "cursor-none" : ""}`}
       onMouseMove={wake}
       onPointerDown={wake}
+      onDoubleClick={toggleFullscreen}
     >
       {!boot ? (
         <Splash subtitle={failed ? "SIN RESPUESTA DEL SERVIDOR · REINTENTANDO" : "ENLAZANDO CON LA ESTACIÓN"} />
@@ -153,10 +171,17 @@ export default function TvScreen() {
           SIN ENLACE · RECONECTANDO<span className="blink">_</span>
         </div>
       )}
+      {!fullscreen && hint && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-[12vh] z-40 flex justify-center">
+          <div className="rounded border border-term-green/60 bg-black/85 px-6 py-3 text-center text-lg tracking-widest">
+            DOBLE CLIC O TECLA F: PANTALLA COMPLETA
+          </div>
+        </div>
+      )}
       {!fullscreen && !idle && (
         <button
           type="button"
-          onClick={() => void document.documentElement.requestFullscreen?.().catch(() => undefined)}
+          onClick={toggleFullscreen}
           className="absolute bottom-3 right-3 z-40 rounded border border-term-green/60 bg-black/80 px-3 py-2 text-xs tracking-widest"
         >
           PANTALLA COMPLETA

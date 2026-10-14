@@ -2,9 +2,11 @@ package es.eclipse.backend.web;
 
 import es.eclipse.backend.domain.MapImage;
 import es.eclipse.backend.security.EclipsePrincipal;
+import es.eclipse.backend.service.AuthService;
 import es.eclipse.backend.service.DisplayService;
 import es.eclipse.backend.web.dto.DisplayDtos.DisplayBootstrap;
 import es.eclipse.backend.web.dto.DisplayDtos.DisplayState;
+import es.eclipse.backend.web.dto.Dtos.JoinResponse;
 import es.eclipse.backend.web.dto.MapImageDto;
 import java.time.Duration;
 import org.springframework.http.CacheControl;
@@ -29,9 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class DisplayController {
 
     private final DisplayService display;
+    private final AuthService auth;
 
-    public DisplayController(DisplayService display) {
+    public DisplayController(DisplayService display, AuthService auth) {
         this.display = display;
+        this.auth = auth;
     }
 
     // ---- lectura (TV y máster)
@@ -72,6 +76,15 @@ public class DisplayController {
                               @RequestHeader("Content-Type") String contentType,
                               @RequestBody byte[] data) {
         return display.upload(me, name, contentType, width, height, data);
+    }
+
+    /** Acceso de la pantalla para abrirla en otra ventana o monitor del ordenador del máster. */
+    @PostMapping("/api/master/display/link")
+    @PreAuthorize("hasRole('MASTER')")
+    public JoinResponse displayLink(@AuthenticationPrincipal EclipsePrincipal me) {
+        AuthService.JoinResult r = auth.displayLink(me);
+        return new JoinResponse(r.token(), r.player().getRole(), r.player().getId(), r.player().getSessionId(),
+                r.player().getName(), r.player().getCharacterName(), r.player().getCharacterCode());
     }
 
     @DeleteMapping("/api/master/maps/{id}")

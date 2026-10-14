@@ -131,6 +131,23 @@ public class AuthService {
 
     public record CodeChange(UUID playerId, String name, String code) {}
 
+    /**
+     * El máster abre la pantalla de mesa en otra ventana de su propio ordenador sin teclear el código:
+     * se emite un token nuevo para el participante "pantalla" (la TV que estuviera conectada en otro sitio sale).
+     */
+    @Transactional
+    public JoinResult displayLink(EclipsePrincipal master) {
+        Player display = players.findBySessionIdAndRoleOrderByCreatedAtAsc(master.sessionId(), es.eclipse.backend.domain.Role.DISPLAY)
+                .stream().findFirst()
+                .orElseThrow(() -> new NotFoundException("La partida no tiene pantalla de mesa"));
+        GameSession session = sessions.findById(master.sessionId())
+                .orElseThrow(() -> new NotFoundException("Sesión no encontrada"));
+        String token = tokens.newToken();
+        display.issueToken(tokens.sha256Hex(token), Instant.now());
+        audit.log(master.sessionId(), master.playerId(), master.name(), "DISPLAY_LINK", display.getName(), null);
+        return new JoinResult(token, display, session);
+    }
+
     public static EclipsePrincipal principalOf(Player p) {
         return new EclipsePrincipal(p.getId(), p.getSessionId(), p.getRole(), p.getName(), p.getCharacterName());
     }

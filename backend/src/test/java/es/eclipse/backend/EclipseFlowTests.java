@@ -390,6 +390,18 @@ class EclipseFlowTests {
         assertFalse(after.contains(scene), after);
     }
 
+    @Test
+    void masterCanOpenTheTableDisplayOnHisOwnComputer() throws Exception {
+        Resp link = call("POST", "/api/master/display/link", master.token(), null);
+        assertEquals(200, link.status(), link.body());
+        assertTrue(link.body().contains("\"role\":\"DISPLAY\""), link.body());
+        String tv = field(link.body(), "token");
+        assertEquals(200, call("GET", "/api/display/bootstrap", tv, null).status());
+        // el máster sigue dentro y un jugador no puede pedir el acceso de la pantalla
+        assertEquals(200, call("GET", "/api/master/overview", master.token(), null).status());
+        assertEquals(403, call("POST", "/api/master/display/link", david.token(), null).status());
+    }
+
     private Resp upload(String path, String contentType, byte[] body) throws Exception {
         HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(URI.create(base() + path))
                 .header("Authorization", "Bearer " + master.token())
