@@ -169,7 +169,7 @@ export default function TableControl({
 
       {/* escena */}
       <Section title="ESCENA EN LA TV">
-        <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        <div className="flex flex-wrap gap-2">
           <Chip small active={sceneKey === "NONE"} tone="dim" onClick={() => goScene("NONE")}>
             REPOSO
           </Chip>
@@ -608,10 +608,10 @@ function TvLauncher({
         onClick={() => void open()}
         className="min-h-[40px] w-full rounded border border-dashed border-term-line text-[11px] tracking-widest text-term-dim"
       >
-        ABRIR EN UNA VENTANA (LA ARRASTRAS TÚ)
+        ABRIR EN UNA VENTANA
       </button>
       <p className="mt-2 text-[10px] leading-relaxed text-term-faint">
-        En la ventana de la TV: doble clic o tecla F para pantalla completa.
+        La ventana se puede arrastrar al otro monitor. En ella: doble clic o tecla F para pantalla completa.
       </p>
     </Section>
   );

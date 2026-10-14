@@ -588,7 +588,7 @@ export default function MasterPanel() {
               </div>
             </Field>
             <Field label="REMITENTE">
-              <div className="no-scrollbar mb-2 flex gap-2 overflow-x-auto">
+              <div className="mb-2 flex flex-wrap gap-2">
                 {SENDER_PRESETS.map((s) => (
                   <Chip key={s} active={compose.senderLabel === s} onClick={() => setCompose((c) => ({ ...c, senderLabel: s }))}>
                     {s}
