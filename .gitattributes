@@ -1,0 +1,5 @@
+# Normaliza finales de linea: LF en el repositorio, nativo en el checkout
+* text=auto
+*.sh text eol=lf
+*.cmd text eol=crlf
+*.png binary
