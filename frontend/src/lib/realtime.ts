@@ -47,6 +47,8 @@ export function useRealtime(options: RealtimeOptions): ConnectionStatus {
       brokerURL: wsUrl(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 2500,
+      // si el servidor no confirma la conexión a tiempo (red móvil, redespliegue), se corta y se reintenta
+      connectionTimeout: 8000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       onConnect: () => {

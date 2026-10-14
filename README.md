@@ -204,7 +204,7 @@ Notas:
    `base = frontend`, `npm run build` y `publish = dist`.
 2. Antes del primer deploy, en **Site configuration → Environment variables** añade
    `VITE_API_URL = https://protocolo-eclipse-api.onrender.com` (sin barra final).
-3. Deploy. La web queda en `https://<nombre>.netlify.app` con HTTPS real: los móviles pueden instalarla desde
+3. Deploy. La web queda en `https://nexus-7-terminal.netlify.app` con HTTPS real: los móviles pueden instalarla desde
    «Añadir a pantalla de inicio» sin avisos, también en iPhone.
 4. Si cambias el nombre del sitio o pones dominio propio, actualiza `FRONTEND_ORIGIN` en Render.
 
