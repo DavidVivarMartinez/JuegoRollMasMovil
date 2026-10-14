@@ -13,11 +13,11 @@ export default defineConfig(({ mode }) => ({
     host: true,
     port: 5173,
     strictPort: true,
-    // Sin changeOrigin: la cabecera Host llega tal cual al backend, que así ve la misma Origin que el navegador
-    // y no aplica CORS (las peticiones son del mismo origen desde el punto de vista del móvil).
+    // Sin changeOrigin y con xfwd: el backend recibe Host y X-Forwarded-Proto originales, reconstruye
+    // el mismo origen que ve el navegador (https://<host>:5173) y no aplica CORS a las peticiones.
     proxy: {
-      "/api": { target: "http://localhost:8090" },
-      "/ws": { target: "ws://localhost:8090", ws: true },
+      "/api": { target: "http://localhost:8090", xfwd: true },
+      "/ws": { target: "ws://localhost:8090", ws: true, xfwd: true },
     },
   },
 }));
