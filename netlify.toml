@@ -1,5 +1,5 @@
 # Netlify: frontend estatico. Configura VITE_API_URL en Site settings > Environment variables
-# con la URL del backend en Render (sin barra final), p. ej. https://eclipse-backend.onrender.com
+# con la URL del backend en Render (sin barra final), p. ej. https://protocolo-eclipse-api.onrender.com
 
 [build]
   base = "frontend"

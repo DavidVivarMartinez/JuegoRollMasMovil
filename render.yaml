@@ -5,10 +5,11 @@
 
 services:
   - type: web
-    name: eclipse-backend
+    name: protocolo-eclipse-api   # URL: https://protocolo-eclipse-api.onrender.com
     runtime: docker
     rootDir: backend
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free            # cambia a "starter" el mes de la partida para que no se duerma
     region: frankfurt
     healthCheckPath: /actuator/health
@@ -18,9 +19,9 @@ services:
         value: prod
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
-      # Dominio del frontend. Al principio vale cualquier *.netlify.app; luego pon el exacto.
+      # Dominio del frontend en Netlify (CORS y WebSocket). Si cambias el nombre del sitio, cámbialo aquí.
       - key: FRONTEND_ORIGIN
-        value: https://*.netlify.app
+        value: https://polite-kataifi-b05440.netlify.app
       # Base de datos (rellenado automáticamente desde el servicio de abajo)
       - key: DB_HOST
         fromDatabase:

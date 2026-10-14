@@ -179,12 +179,13 @@ El repositorio ya trae todo lo necesario: `render.yaml` (Blueprint con el servic
 
 ### 1. Backend en Render
 
-1. En Render: **New → Blueprint**, conecta el repositorio `JuegoRollMasMovil` y acepta `render.yaml`.
+1. Abre https://render.com/deploy?repo=https://github.com/DavidVivarMartinez/JuegoRollMasMovil (equivale a
+   **New → Blueprint** con este repositorio) y acepta `render.yaml`.
 2. Te pedirá los cinco códigos de acceso (`APP_SEED_MASTER_CODE` y `APP_SEED_PLAYERS_0..3_CODE`). Pon los reales:
    son los que teclearán los móviles. El orden de los jugadores es el de `application.yml`: David, Laura, Carlos, Ana.
 3. Crea los servicios. El primer arranque tarda unos minutos (compila la imagen). Cuando el health check esté en verde,
-   la URL será `https://eclipse-backend.onrender.com` (o con sufijo si el nombre estaba cogido). Apúntala.
-4. Comprueba `https://<tu-backend>/actuator/health` → `{"status":"UP"}`.
+   la URL será `https://protocolo-eclipse-api.onrender.com` (o con sufijo si el nombre estaba cogido). Apúntala.
+4. Comprueba `https://protocolo-eclipse-api.onrender.com/actuator/health` → `{"status":"UP"}`.
 
 Notas:
 - El plan **free** se apaga tras 15 minutos sin tráfico y tarda ~1 minuto en despertar. La web hace un ping cada
@@ -194,15 +195,15 @@ Notas:
 - El PostgreSQL gratuito de Render **caduca a los 30 días** y se borra. Para algo duradero usa Neon (gratis):
   en el servicio de Render define `SPRING_DATASOURCE_URL=jdbc:postgresql://<host>/<db>?sslmode=require`,
   `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`, y elimina las variables `DB_*`.
-- `FRONTEND_ORIGIN` empieza en `https://*.netlify.app`. Cuando tengas el dominio exacto de Netlify, cámbialo ahí
-  (es lo que permite CORS y el WebSocket desde el frontend).
+- `FRONTEND_ORIGIN` vale `https://polite-kataifi-b05440.netlify.app`, el sitio actual de Netlify. Es lo que permite
+  CORS y el WebSocket desde el frontend; si cambias el nombre del sitio, cámbialo también en Render.
 
 ### 2. Frontend en Netlify
 
 1. En Netlify: **Add new site → Import an existing project**, elige el repositorio. `netlify.toml` ya fija
    `base = frontend`, `npm run build` y `publish = dist`.
 2. Antes del primer deploy, en **Site configuration → Environment variables** añade
-   `VITE_API_URL = https://<tu-backend>.onrender.com` (sin barra final).
+   `VITE_API_URL = https://protocolo-eclipse-api.onrender.com` (sin barra final).
 3. Deploy. La web queda en `https://<nombre>.netlify.app` con HTTPS real: los móviles pueden instalarla desde
    «Añadir a pantalla de inicio» sin avisos, también en iPhone.
 4. Si cambias el nombre del sitio o pones dominio propio, actualiza `FRONTEND_ORIGIN` en Render.
