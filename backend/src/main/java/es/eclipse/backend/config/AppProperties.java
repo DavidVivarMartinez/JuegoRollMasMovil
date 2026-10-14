@@ -24,6 +24,8 @@ public record AppProperties(
             @DefaultValue("PROTOCOLO: ECLIPSE") String sessionName,
             @DefaultValue("Máster") String masterName,
             String masterCode,
+            @DefaultValue("Pantalla de mesa") String displayName,
+            String displayCode,
             @DefaultValue List<SeedPlayer> players) {}
 
     public record SeedPlayer(

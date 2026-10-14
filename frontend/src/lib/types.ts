@@ -1,6 +1,6 @@
 // Tipos espejo de los DTOs del backend (es.eclipse.backend.web.dto.Dtos)
 
-export type Role = "MASTER" | "PLAYER";
+export type Role = "MASTER" | "PLAYER" | "DISPLAY";
 export type GameModule = "COMMS" | "MISSIONS" | "INVENTORY" | "FILES" | "MAP" | "BIOMETRICS";
 export type MessageType = "TEXT" | "ALERT" | "SYSTEM";
 export type SessionStatus = "LOBBY" | "RUNNING" | "PAUSED" | "FINISHED";
@@ -206,6 +206,8 @@ export interface Overview {
   files: GameFile[];
   map: Sector[];
   accessCodes: AccessCode[];
+  /** ids de los participantes con el terminal conectado ahora mismo (jugadores y pantalla de mesa) */
+  connected: string[];
   serverTime: string;
 }
 
@@ -249,4 +251,66 @@ export interface ApiProblem {
   detail?: string;
   module?: string;
   fields?: Record<string, string>;
+}
+
+// ---------------------------------------------------------------- pantalla de mesa (TV)
+
+export type OverlayType = "NONE" | "BLACKOUT" | "ALERT" | "MESSAGE";
+
+export interface DisplayToken {
+  id: string;
+  label: string;
+  color: string;
+  /** posición relativa a la escena, de 0 a 1 */
+  x: number;
+  y: number;
+  visible: boolean;
+  /** ficha de un jugador; null para PNJ, infectados... */
+  playerId: string | null;
+}
+
+export interface DisplayFog {
+  enabled: boolean;
+  cols: number;
+  rows: number;
+  /** cols*rows caracteres: '1' visible, '0' cubierto, por filas */
+  revealed: string;
+}
+
+export interface DisplayScene {
+  tokens: DisplayToken[];
+  fog: DisplayFog;
+}
+
+export interface DisplayOverlay {
+  type: OverlayType;
+  title: string | null;
+  text: string | null;
+}
+
+export interface DisplayState {
+  rev: string | null;
+  /** "NONE", "STATION" o "MAP:<id>" */
+  scene: string;
+  scenes: Record<string, DisplayScene>;
+  overlay: DisplayOverlay;
+  glitch: boolean;
+  showCountdown: boolean;
+}
+
+export interface MapImage {
+  id: number;
+  name: string;
+  contentType: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+export interface DisplayBootstrap {
+  session: SessionDto;
+  state: DisplayState;
+  maps: MapImage[];
+  sectors: Sector[];
 }

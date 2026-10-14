@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import AccessCodes from "../components/AccessCodes";
+import TableControl from "../components/TableControl";
 import BottomNav, { type NavItem } from "../components/BottomNav";
 import { Badge, Chip, Field, FileManager, ItemManager, MissionManager } from "../components/ContentManagers";
 import Countdown from "../components/Countdown";
@@ -24,6 +25,8 @@ import {
   type GameFile,
   type GameModule,
   type Item,
+  type DisplayState,
+  type MapImage,
   type Message,
   type MessageType,
   type Mission,
@@ -42,7 +45,7 @@ import {
   type SessionStatus,
 } from "../lib/types";
 
-type View = "crew" | "send" | "station" | "log";
+type View = "crew" | "send" | "station" | "log" | "table";
 
 interface FeedItem {
   key: string;
@@ -74,6 +77,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "send", label: "TRANSMITIR", icon: "send" },
   { key: "station", label: "ESTACIÓN", icon: "map" },
   { key: "log", label: "REGISTRO", icon: "log" },
+  { key: "table", label: "MESA", icon: "tv" },
 ];
 
 function messageItem(m: Message): FeedItem {
@@ -145,6 +149,16 @@ export default function MasterPanel() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  // ---- pantalla de mesa (TV)
+  const [display, setDisplay] = useState<DisplayState | null>(null);
+  const [maps, setMaps] = useState<MapImage[]>([]);
+  const [online, setOnline] = useState<Set<string>>(new Set());
+  const deviceId = useRef(Math.random().toString(36).slice(2, 10)).current;
+  const revCounter = useRef(0);
+  const pendingDisplay = useRef<DisplayState | null>(null);
+  const savingDisplay = useRef(false);
+  const flushTimer = useRef<number | undefined>(undefined);
+
   useWakeLock();
   useKeepAlive();
 
@@ -161,8 +175,16 @@ export default function MasterPanel() {
 
   const resync = useCallback(async () => {
     try {
-      const [ov, msgs, acts] = await Promise.all([api.master.overview(), api.master.messages(), api.master.actions()]);
+      const [ov, msgs, acts, table] = await Promise.all([
+        api.master.overview(),
+        api.master.messages(),
+        api.master.actions(),
+        api.display.bootstrap(),
+      ]);
       setOverview(ov);
+      setOnline(new Set(ov.connected ?? []));
+      setMaps(table.maps);
+      if (!pendingDisplay.current && !savingDisplay.current) setDisplay(table.state);
       setClockOffset(Date.parse(ov.serverTime) - Date.now());
       setFeed(sortFeed([...msgs.map(messageItem), ...msgs.filter((m) => m.readAt).map(readItem), ...acts.map(actionItem)]));
       setError(null);
@@ -217,6 +239,7 @@ export default function MasterPanel() {
         }
         case "PRESENCE": {
           const pr = event.payload as Presence;
+          setOnline(new Set(pr.connected));
           setOverview((prev) =>
             prev
               ? { ...prev, players: prev.players.map((p) => ({ ...p, connected: pr.connected.includes(p.player.id) })) }
@@ -239,14 +262,26 @@ export default function MasterPanel() {
         case "MAP":
           setOverview((prev) => (prev ? { ...prev, map: event.payload as Sector[] } : prev));
           break;
+        case "DISPLAY": {
+          const next = event.payload as DisplayState;
+          // los ecos de mis propios cambios se ignoran (ya están aplicados y podrían ser más viejos)
+          if (!next.rev?.startsWith(`${deviceId}:`)) setDisplay(next);
+          break;
+        }
+        case "MAPS":
+          setMaps(event.payload as MapImage[]);
+          break;
         default:
           break;
       }
     },
-    [addItem, patchPlayer],
+    [addItem, patchPlayer, deviceId],
   );
 
-  const destinations = useMemo(() => [`/topic/session/${sessionId}`, `/topic/session/${sessionId}/master`], [sessionId]);
+  const destinations = useMemo(
+    () => [`/topic/session/${sessionId}`, `/topic/session/${sessionId}/master`, `/topic/session/${sessionId}/display`],
+    [sessionId],
+  );
   const onAuthError = useCallback(() => {
     clearSession();
     navigate("/", { replace: true });
@@ -255,6 +290,47 @@ export default function MasterPanel() {
 
   const players = overview?.players ?? [];
   const nameOf = (id: string | null) => players.find((p) => p.player.id === id)?.player.name ?? "?";
+  const playerSummaries = useMemo(() => (overview?.players ?? []).map((p) => p.player), [overview?.players]);
+  const tvId = overview?.accessCodes?.find((c) => c.role === "DISPLAY")?.playerId;
+  const tvOnline = !!tvId && online.has(tvId);
+
+  // ---- envío del estado de la mesa: de uno en uno y en orden; los arrastres se agrupan (~10 envíos por segundo)
+  const flushDisplay = useCallback(async () => {
+    window.clearTimeout(flushTimer.current);
+    flushTimer.current = undefined;
+    if (savingDisplay.current) return;
+    const next = pendingDisplay.current;
+    if (!next) return;
+    pendingDisplay.current = null;
+    savingDisplay.current = true;
+    try {
+      await api.master.saveDisplay(next);
+    } catch (e) {
+      showError(e);
+    } finally {
+      savingDisplay.current = false;
+      if (pendingDisplay.current) void flushDisplay();
+    }
+  }, [showError]);
+
+  const changeDisplay = useCallback(
+    (next: DisplayState, immediate = false) => {
+      const withRev = { ...next, rev: `${deviceId}:${++revCounter.current}` };
+      setDisplay(withRev);
+      pendingDisplay.current = withRev;
+      if (immediate) void flushDisplay();
+      else if (flushTimer.current === undefined) flushTimer.current = window.setTimeout(() => void flushDisplay(), 100);
+    },
+    [deviceId, flushDisplay],
+  );
+
+  const refreshMaps = useCallback(async () => {
+    try {
+      setMaps((await api.display.bootstrap()).maps);
+    } catch (e) {
+      showError(e);
+    }
+  }, [showError]);
 
   // ---- acciones del máster (envuelven la API con aviso de error)
   const guard = useCallback(
@@ -415,6 +491,14 @@ export default function MasterPanel() {
             <div className="whitespace-nowrap text-[10px] tracking-[0.4em] text-term-dim">PANEL DEL MÁSTER</div>
             <div className="truncate text-base font-bold leading-tight">{overview?.session.name ?? "..."}</div>
           </div>
+          <button
+            type="button"
+            onClick={() => setView("table")}
+            className="hidden h-11 shrink-0 items-center gap-2 rounded border border-term-line px-3 text-[11px] tracking-widest text-term-dim active:bg-white/10 lg:flex"
+          >
+            <Icon name="tv" className="h-5 w-5" />
+            MESA
+          </button>
           <button
             type="button"
             onClick={() => void resync()}
@@ -618,6 +702,21 @@ export default function MasterPanel() {
       </main>
 
       <BottomNav items={navItems} active={view} onSelect={(key) => setView(key as View)} className="lg:hidden" />
+
+      {view === "table" && (
+        <TableControl
+          players={playerSummaries}
+          sectors={overview?.map ?? []}
+          display={display}
+          maps={maps}
+          tvOnline={tvOnline}
+          onChange={changeDisplay}
+          onMapsChanged={() => void refreshMaps()}
+          onClose={() => setView("crew")}
+          onError={showError}
+          onNotice={showNotice}
+        />
+      )}
 
       {sheet && overview && (
         <PlayerSheet

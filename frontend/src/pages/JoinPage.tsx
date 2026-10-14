@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
-import { loadSession, saveSession } from "../lib/auth";
+import { homeFor, loadSession, saveSession } from "../lib/auth";
 import { primeAudio } from "../lib/notify";
 import { isStandalone } from "../lib/pwa";
 
@@ -16,7 +16,7 @@ export default function JoinPage() {
   // Si ya hay sesión guardada en este móvil, directos al panel que toque
   useEffect(() => {
     const session = loadSession();
-    if (session) navigate(session.role === "MASTER" ? "/master" : "/player", { replace: true });
+    if (session) navigate(homeFor(session.role), { replace: true });
   }, [navigate]);
 
   const submit = useCallback(
@@ -35,7 +35,7 @@ export default function JoinPage() {
           name: r.name,
           characterName: r.characterName,
         });
-        navigate(r.role === "MASTER" ? "/master" : "/player", { replace: true });
+        navigate(homeFor(r.role), { replace: true });
       } catch (e) {
         if (e instanceof ApiError) {
           if (e.code === "INVALID_CODE") setError("CÓDIGO RECHAZADO");

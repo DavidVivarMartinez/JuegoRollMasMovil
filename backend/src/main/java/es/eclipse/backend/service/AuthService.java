@@ -104,7 +104,7 @@ public class AuthService {
     private String generateUnique(Player player) {
         String prefix = codePrefix(player);
         for (int attempt = 0; attempt < 20; attempt++) {
-            String candidate = tokens.newAccessCode(prefix, player.getRole() == es.eclipse.backend.domain.Role.MASTER ? 2 : 1);
+            String candidate = tokens.newAccessCode(prefix, player.getRole() == es.eclipse.backend.domain.Role.PLAYER ? 1 : 2);
             if (players.findByAccessCodeHash(tokens.sha256Hex(tokens.normalizeCode(candidate))).isEmpty()) {
                 return candidate;
             }
@@ -115,6 +115,9 @@ public class AuthService {
     static String codePrefix(Player player) {
         if (player.getRole() == es.eclipse.backend.domain.Role.MASTER) {
             return "MST";
+        }
+        if (player.getRole() == es.eclipse.backend.domain.Role.DISPLAY) {
+            return "TV";
         }
         String character = player.getCharacterCode() == null ? "" : player.getCharacterCode();
         return switch (character) {

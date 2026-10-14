@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Seguridad HTTP: API sin estado autenticada por token Bearer (emitido al entrar con código).
- * Roles: MASTER y PLAYER. El handshake WebSocket es público; el token se valida en el CONNECT de STOMP.
+ * Roles: MASTER, PLAYER y DISPLAY (pantalla de mesa, solo lectura). El handshake WebSocket es público; el token se valida en el CONNECT de STOMP.
  */
 @Configuration
 @EnableWebSecurity
@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/session/join", "/ws/**", "/actuator/health", "/actuator/health/**", "/error").permitAll()
                         .requestMatchers("/api/master/**").hasRole("MASTER")
+                        .requestMatchers("/api/display/**").hasAnyRole("MASTER", "DISPLAY")
+                        .requestMatchers("/api/player/**").hasRole("PLAYER")
                         .requestMatchers("/api/**").authenticated()
                         // El resto (frontend compilado servido como estático) es público
                         .anyRequest().permitAll())

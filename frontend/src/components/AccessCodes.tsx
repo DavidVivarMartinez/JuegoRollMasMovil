@@ -65,8 +65,8 @@ export default function AccessCodes({
           <li key={c.playerId} className="rounded border border-term-line/70 p-2.5">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <div className="truncate text-sm font-bold">{c.role === "MASTER" ? "MÁSTER" : c.name}</div>
-                <div className="text-[10px] tracking-widest text-term-dim">{c.role === "MASTER" ? "PANEL DE CONTROL" : c.characterName?.toUpperCase()}</div>
+                <div className="truncate text-sm font-bold">{c.role === "MASTER" ? "MÁSTER" : c.role === "DISPLAY" ? "PANTALLA TV" : c.name}</div>
+                <div className="text-[10px] tracking-widest text-term-dim">{c.role === "MASTER" ? "PANEL DE CONTROL" : c.role === "DISPLAY" ? "PANTALLA DE MESA" : c.characterName?.toUpperCase()}</div>
               </div>
               {c.defaultCode ? <Badge tone="red">EJEMPLO</Badge> : <Badge tone="green">PROPIO</Badge>}
             </div>
@@ -144,7 +144,7 @@ export default function AccessCodes({
             Por seguridad solo se guardan cifrados: al salir de esta pantalla no se podrán volver a ver (sí cambiar otra vez).
           </p>
           <pre className="mt-2 select-all whitespace-pre-wrap text-sm leading-relaxed text-term-green">
-            {shownList.map((c) => `${(c.role === "MASTER" ? "MÁSTER" : c.name).padEnd(8)} ${shown[c.playerId]}`).join("\n")}
+            {shownList.map((c) => `${(c.role === "MASTER" ? "MÁSTER" : c.role === "DISPLAY" ? "TV" : c.name).padEnd(8)} ${shown[c.playerId]}`).join("\n")}
           </pre>
         </div>
       )}

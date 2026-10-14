@@ -1,16 +1,17 @@
 import { useEffect, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
-import { loadSession, UNAUTHORIZED_EVENT } from "./lib/auth";
+import { homeFor, loadSession, UNAUTHORIZED_EVENT } from "./lib/auth";
 import type { Role } from "./lib/types";
 import JoinPage from "./pages/JoinPage";
 import PlayerTerminal from "./pages/PlayerTerminal";
 import MasterPanel from "./pages/MasterPanel";
+import TvScreen from "./pages/TvScreen";
 
 function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
   const session = loadSession();
   if (!session) return <Navigate to="/" replace />;
   if (session.role !== role) {
-    return <Navigate to={session.role === "MASTER" ? "/master" : "/player"} replace />;
+    return <Navigate to={homeFor(session.role)} replace />;
   }
   return <>{children}</>;
 }
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <RequireRole role="MASTER">
               <MasterPanel />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/tv"
+          element={
+            <RequireRole role="DISPLAY">
+              <TvScreen />
             </RequireRole>
           }
         />

@@ -12,6 +12,11 @@ export interface StoredSession {
   characterName: string | null;
 }
 
+/** Pantalla de inicio de cada rol. */
+export function homeFor(role: Role): string {
+  return role === "MASTER" ? "/master" : role === "DISPLAY" ? "/tv" : "/player";
+}
+
 export function loadSession(): StoredSession | null {
   try {
     const raw = localStorage.getItem(KEY);

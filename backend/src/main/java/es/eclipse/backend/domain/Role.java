@@ -1,3 +1,4 @@
 package es.eclipse.backend.domain;
 
-public enum Role { MASTER, PLAYER }
+/** MASTER: panel de control · PLAYER: terminal de un jugador · DISPLAY: pantalla de mesa (TV), solo lectura. */
+public enum Role { MASTER, PLAYER, DISPLAY }

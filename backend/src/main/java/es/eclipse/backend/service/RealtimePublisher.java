@@ -47,6 +47,15 @@ public class RealtimePublisher {
         afterCommit(() -> template.convertAndSend(masterTopic(sessionId), ServerEvent.of(type, payload)));
     }
 
+    public static String displayTopic(UUID sessionId) {
+        return sessionTopic(sessionId) + "/display";
+    }
+
+    /** Topic de la pantalla de mesa (TV): lo leen la TV y el máster, nunca los jugadores. */
+    public void toDisplay(UUID sessionId, String type, Object payload) {
+        afterCommit(() -> template.convertAndSend(displayTopic(sessionId), ServerEvent.of(type, payload)));
+    }
+
     private static void afterCommit(Runnable action) {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

@@ -64,6 +64,9 @@ app:
     session-name: "PROTOCOLO: ECLIPSE"
     master-name: "Máster"
     master-code: "ECLIPSE-MASTER"
+    # Pantalla de mesa (la TV conectada al ordenador): entra con este código y muestra lo que decide el máster
+    display-name: "Pantalla de mesa"
+    display-code: "PANTALLA-MESA"
     players:
       - name: David
         character: Ingeniero

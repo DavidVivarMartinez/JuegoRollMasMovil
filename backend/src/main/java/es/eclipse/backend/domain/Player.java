@@ -62,6 +62,11 @@ public class Player {
         return new Player(sessionId, Role.MASTER, name, null, null, accessCodeHash);
     }
 
+    /** Pantalla de mesa (TV): entra con su propio código y solo puede leer el estado de la mesa. */
+    public static Player display(UUID sessionId, String name, String accessCodeHash) {
+        return new Player(sessionId, Role.DISPLAY, name, null, null, accessCodeHash);
+    }
+
     public static Player player(UUID sessionId, String name, String characterName, String characterCode, String accessCodeHash) {
         return new Player(sessionId, Role.PLAYER, name, characterName, characterCode, accessCodeHash);
     }

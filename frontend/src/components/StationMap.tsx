@@ -45,10 +45,15 @@ export default function StationMap({
   sectors,
   selected,
   onSelect,
+  viewBox = "0 0 100 100",
+  className = "w-full select-none",
 }: {
   sectors: Sector[];
   selected?: string | null;
   onSelect?: (code: string) => void;
+  /** recorte del plano (la pantalla de mesa usa solo la franja con sectores) */
+  viewBox?: string;
+  className?: string;
 }) {
   const byCode = new Map(sectors.map((s) => [s.code, s]));
   const edges: Array<[Sector, Sector]> = [];
@@ -65,7 +70,7 @@ export default function StationMap({
   }
 
   return (
-    <svg viewBox="0 0 100 100" className="w-full select-none" role="img" aria-label="Mapa de la estación">
+    <svg viewBox={viewBox} className={className} role="img" aria-label="Mapa de la estación">
       <rect x="0" y="0" width="100" height="100" fill="transparent" />
       {edges.map(([a, b]) => (
         <line
@@ -89,6 +94,8 @@ export default function StationMap({
             onClick={onSelect ? () => onSelect(s.code) : undefined}
             className={onSelect ? "cursor-pointer" : undefined}
           >
+            {/* fondo opaco: los pasillos no se ven a través de la casilla */}
+            <rect x={s.x - W / 2} y={s.y - H / 2} width={W} height={H} rx="1.2" fill="var(--color-term-bg)" />
             <rect
               x={s.x - W / 2}
               y={s.y - H / 2}

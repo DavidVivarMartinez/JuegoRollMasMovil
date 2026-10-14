@@ -6,6 +6,7 @@ import es.eclipse.backend.domain.GameSession;
 import es.eclipse.backend.domain.ModuleState;
 import es.eclipse.backend.domain.Player;
 import es.eclipse.backend.domain.PlayerState;
+import es.eclipse.backend.domain.Role;
 import es.eclipse.backend.repository.GameSessionRepository;
 import es.eclipse.backend.repository.ModuleStateRepository;
 import es.eclipse.backend.repository.PlayerRepository;
@@ -59,6 +60,7 @@ public class SeedDataRunner implements ApplicationRunner {
         if (existing != null) {
             log.info("Seed omitido: ya existe la partida '{}'", existing.getName());
             contentSeeder.seedIfEmpty(existing.getId());
+            ensureDisplay(existing.getId(), seed);
             return;
         }
         if (seed.masterCode() == null || seed.masterCode().isBlank() || seed.players().isEmpty()) {
@@ -84,11 +86,33 @@ public class SeedDataRunner implements ApplicationRunner {
         }
         codes.append("==========================================================");
 
+        if (seed.displayCode() != null && !seed.displayCode().isBlank()) {
+            // antes de la línea final de "====="
+            codes.insert(codes.lastIndexOf("\n") + 1, String.format("  %-28s %s%n", "PANTALLA (TV)", seed.displayCode()));
+        }
         log.info("Partida '{}' creada con {} jugadores", session.getName(), seed.players().size());
         contentSeeder.seedIfEmpty(session.getId());
+        ensureDisplay(session.getId(), seed);
         if (seed.printCodes()) {
             log.warn("{}", codes);
         }
+    }
+
+    /** Crea el participante "pantalla de mesa" si la partida no tiene ninguno (también en partidas ya existentes). */
+    private void ensureDisplay(UUID sessionId, AppProperties.Seed seed) {
+        if (seed.displayCode() == null || seed.displayCode().isBlank()) {
+            return;
+        }
+        if (!players.findBySessionIdAndRoleOrderByCreatedAtAsc(sessionId, Role.DISPLAY).isEmpty()) {
+            return;
+        }
+        String codeHash = hash(seed.displayCode());
+        if (players.findByAccessCodeHash(codeHash).isPresent()) {
+            log.warn("No se crea la pantalla de mesa: su código ya lo usa otro participante");
+            return;
+        }
+        players.save(Player.display(sessionId, seed.displayName(), codeHash));
+        log.info("Pantalla de mesa creada");
     }
 
     private String hash(String code) {

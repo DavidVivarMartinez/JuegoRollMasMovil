@@ -11,7 +11,11 @@ export type IconName =
   | "log"
   | "lock"
   | "refresh"
-  | "exit";
+  | "exit"
+  | "tv"
+  | "eye"
+  | "eyeOff"
+  | "upload";
 
 const PATHS: Record<IconName, string> = {
   direct: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
@@ -27,6 +31,10 @@ const PATHS: Record<IconName, string> = {
   lock: "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",
   refresh: "M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6",
   exit: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
+  tv: "M3 5h18v12H3zM8 21h8M12 17v4",
+  eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6a3 3 0 0 0 0-6",
+  eyeOff: "M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2",
+  upload: "M12 16V4M7 9l5-5 5 5M4 20h16",
 };
 
 export default function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {

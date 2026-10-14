@@ -20,6 +20,22 @@ el máster controla la partida (también desde el móvil) y todo cambia en tiemp
 | Todo pensado para móvil: PWA, pantalla siempre encendida, barra inferior, zonas seguras | |
 | Contenido de la partida: misiones (tripulación, oficiales y secretas), inventario, archivos restringidos, plano de la estación y cuenta atrás | |
 
+## Pantalla de mesa (TV)
+
+Para la tele conectada al ordenador de la mesa. El ordenador abre la web y entra con el código de la pantalla
+(`PANTALLA-MESA` por defecto, cámbialo en **ESTACIÓN → CÓDIGOS DE ACCESO**); pulsa **PANTALLA COMPLETA** y ya no hace falta tocarlo.
+Todo se controla desde el móvil del máster, pestaña **MESA**:
+
+- **Escena**: reposo (logo de la partida), plano de la estación en vivo o un mapa propio subido como imagen desde el móvil.
+  Las fotos grandes se reducen en el móvil antes de subirlas (máx. 2560 px); se guardan en la base de datos.
+- **Fichas**: una por jugador (aparecen solas) y las que añadas para PNJ, infectados u objetos. Arrastra o toca una ficha y
+  luego el destino. El ojo la oculta en la tele. Cada escena recuerda sus posiciones.
+- **Niebla de guerra** por casillas (8 a 24 de ancho): pincel REVELAR o CUBRIR pasando el dedo. En la tele es opaca con bordes
+  suaves; en el móvil se ve translúcida. Los PNJ bajo la niebla no se ven; los jugadores, siempre.
+- **Efectos**: apagón, alerta roja o mensaje a pantalla completa, interferencia y la cuenta atrás común en grande.
+
+La tele solo puede leer (rol `DISPLAY`): no ve mensajes privados, misiones ni secretos, y el plano lo ve como los jugadores.
+
 ## Contenido de la partida
 
 Todo el contenido inicial está en `backend/src/main/resources/game-content.yml` y se carga una vez por partida
@@ -62,6 +78,7 @@ Al arrancar, el backend crea la partida de ejemplo y escribe en el log los códi
 | Laura · Médica | `MED-2048` |
 | Carlos · Seguridad | `SEG-0917` |
 | Ana · Científica | `CIE-6618` |
+| Pantalla de mesa (TV) | `PANTALLA-MESA` |
 
 Los códigos no distinguen mayúsculas, espacios ni guiones (`cie 6618` vale). Están en `backend/src/main/resources/application.yml`
 bajo `app.seed` y se cargan solos en la base de datos la primera vez que arranca el backend. Como son públicos en
@@ -109,7 +126,7 @@ compose.yaml                      PostgreSQL para desarrollo
 backend/
   src/main/resources/application.yml      configuración y partida de ejemplo (app.seed)
   src/main/resources/game-content.yml     misiones, objetos, archivos y plano iniciales (prefijo game.*)
-  src/main/resources/db/migration/        Flyway (V1__init.sql, V2__content.sql)
+  src/main/resources/db/migration/        Flyway (V1 esquema, V2 contenido, V3 pantalla de mesa)
   src/main/java/es/eclipse/backend/
     config/      SecurityConfig (token Bearer, roles), WebSocketConfig (STOMP), AppProperties, GameContentProperties
     security/    EclipsePrincipal, TokenService, filtro HTTP, interceptor STOMP, limitador de intentos
@@ -123,10 +140,11 @@ frontend/
   public/        manifest.webmanifest, sw.js, icons/
   scripts/       make-icons.mjs (genera los iconos PNG sin dependencias)
   src/lib/       api.ts (REST), realtime.ts (STOMP con reconexión), auth.ts, notify.ts, wakeLock.ts, pwa.ts, types.ts
-  src/pages/     JoinPage, PlayerTerminal (DIRECTO, COMMS, MISIÓN, OBJETOS, ARCHIVOS, MAPA, BIO),
+  src/pages/     JoinPage, TvScreen (pantalla de mesa), PlayerTerminal (DIRECTO, COMMS, MISIÓN, OBJETOS, ARCHIVOS, MAPA, BIO),
                  MasterPanel (Tripulación con ficha por jugador, Transmitir, Estación, Registro)
   src/components/ BottomNav, Icon, MessageBubble, LockOverlay, AlertFlash, StatusDot,
-                 StationMap (plano SVG), Countdown, ContentManagers (gestores de misiones, objetos y archivos)
+                 StationMap (plano SVG), Countdown, ContentManagers (gestores de misiones, objetos y archivos),
+                 SceneView (mapa, niebla y fichas), TableControl (MESA del máster), AccessCodes
 ```
 
 ### API REST
@@ -147,6 +165,11 @@ frontend/
 | POST / PATCH / DELETE | `/api/master/files[/{id}]` | máster | Crear, cambiar estado o texto, borrar |
 | PATCH | `/api/master/map/{code}` | máster | `{status, note}` de un sector |
 | POST / DELETE | `/api/master/countdown` | máster | Iniciar `{label, seconds}` o cancelar la cuenta atrás |
+| POST | `/api/master/players/{id}/code` | máster | Cambiar `{code}` o generar el código de un participante |
+| GET | `/api/display/bootstrap` | TV y máster | Estado de la mesa, mapas, plano y sesión |
+| GET | `/api/display/maps/{id}/image` | TV y máster | Imagen de un mapa |
+| PUT | `/api/master/display` | máster | Estado completo de la mesa (el servidor lo acota y corrige) |
+| POST / DELETE | `/api/master/maps[/{id}]` | máster | Subir (`?name&width&height`, cuerpo = imagen) o borrar un mapa |
 | GET | `/api/master/overview` | máster | Jugadores, conexión, estado oculto y módulos |
 | POST | `/api/master/messages` | máster | Mensaje privado (`recipientId`) o global (sin destinatario) |
 | PATCH | `/api/master/players/{id}/modules/{module}` | máster | `{locked, visible}` |
@@ -167,6 +190,7 @@ suscripción no permitida.
 | `/user/queue/messages` | el propio jugador | `MESSAGE` (privado) |
 | `/user/queue/state` | el propio jugador | `MODULES`, `BIOMETRICS`, `MISSIONS`, `ITEMS`, `FILES` (listas completas ya filtradas) |
 | `/topic/session/{sessionId}` | toda la partida | `MESSAGE` (global), `SESSION` (estado y cuenta atrás), `MAP` |
+| `/topic/session/{sessionId}/display` | TV y máster | `DISPLAY` (estado de la mesa), `MAPS` |
 | `/topic/session/{sessionId}/master` | solo el máster | `MESSAGE`, `MESSAGE_READ`, `MODULES`, `PLAYER_STATE`, `PRESENCE`, `PLAYER_ACTION`, `SESSION`, `MISSIONS`, `ITEMS`, `FILES`, `MAP` |
 
 Cada evento llega como `{ "type": "...", "payload": {...}, "ts": "..." }`. Al reconectar, el cliente vuelve a pedir

@@ -4,12 +4,15 @@ import type {
   ApiProblem,
   AuditEntry,
   CodeChanged,
+  DisplayBootstrap,
+  DisplayState,
   FileClassification,
   FileStatus,
   GameFile,
   GameModule,
   Item,
   JoinResponse,
+  MapImage,
   Me,
   Message,
   MessageType,
@@ -39,16 +42,17 @@ export class ApiError extends Error {
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  return send<T>(method, path, body === undefined ? undefined : JSON.stringify(body), body === undefined ? undefined : "application/json");
+}
+
+/** Petición con cuerpo ya preparado (JSON en texto o bytes de una imagen). */
+async function send<T>(method: string, path: string, body?: BodyInit, contentType?: string): Promise<T> {
   const session = loadSession();
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (contentType) headers["Content-Type"] = contentType;
   if (session) headers.Authorization = `Bearer ${session.token}`;
 
-  const res = await fetch(apiUrl(path), {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
+  const res = await fetch(apiUrl(path), { method, headers, body });
 
   if (res.status === 204) return undefined as T;
   const text = await res.text();
@@ -71,6 +75,14 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     throw new ApiError(res.status, problem.code, problem.detail ?? `Error ${res.status}`, problem);
   }
   return data as T;
+}
+
+/** Descarga autenticada de un binario (imágenes de mapas: un <img> no puede enviar el token). */
+export async function fetchBlob(path: string): Promise<Blob> {
+  const session = loadSession();
+  const res = await fetch(apiUrl(path), { headers: session ? { Authorization: `Bearer ${session.token}` } : {} });
+  if (!res.ok) throw new ApiError(res.status, undefined, `Error ${res.status}`);
+  return res.blob();
 }
 
 export interface MissionInput {
@@ -113,6 +125,10 @@ export const api = {
   useItem: (id: number) => request<Item[]>("POST", `/api/player/items/${id}/use`),
   openFile: (id: number) => request<GameFile>("POST", `/api/player/files/${id}/open`),
 
+  display: {
+    bootstrap: () => request<DisplayBootstrap>("GET", "/api/display/bootstrap"),
+  },
+
   master: {
     overview: () => request<Overview>("GET", "/api/master/overview"),
     messages: () => request<Message[]>("GET", "/api/master/messages"),
@@ -149,6 +165,16 @@ export const api = {
     updateFile: (id: number, patch: { title?: string; classification?: FileClassification; body?: string; status?: FileStatus }) =>
       request<GameFile>("PATCH", `/api/master/files/${id}`, patch),
     deleteFile: (id: number) => request<void>("DELETE", `/api/master/files/${id}`),
+
+    saveDisplay: (state: DisplayState) => request<DisplayState>("PUT", "/api/master/display", state),
+    uploadMap: (image: Blob, name: string, width: number, height: number) =>
+      send<MapImage>(
+        "POST",
+        `/api/master/maps?name=${encodeURIComponent(name)}&width=${width}&height=${height}`,
+        image,
+        image.type || "image/jpeg",
+      ),
+    deleteMap: (id: number) => request<void>("DELETE", `/api/master/maps/${id}`),
 
     updateSector: (code: string, patch: { status?: SectorStatus; note?: string }) =>
       request<Sector[]>("PATCH", `/api/master/map/${code}`, patch),

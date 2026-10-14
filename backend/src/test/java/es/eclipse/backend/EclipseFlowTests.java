@@ -315,6 +315,89 @@ class EclipseFlowTests {
         assertEquals(200, call("POST", "/api/master/players/" + lauraId + "/code", master.token(), "{\"code\":\"MED-2048\"}").status());
     }
 
+    // ---------------------------------------------------------------- pantalla de mesa (TV)
+
+    @Test
+    void tableDisplayIsControlledByMasterAndReadOnlyForTheTv() throws Exception {
+        Resp tvJoin = call("POST", "/api/session/join", null, "{\"code\":\"pantalla mesa\"}");
+        assertEquals(200, tvJoin.status(), tvJoin.body());
+        assertTrue(tvJoin.body().contains("\"role\":\"DISPLAY\""), tvJoin.body());
+        String tv = field(tvJoin.body(), "token");
+
+        Resp boot = call("GET", "/api/display/bootstrap", tv, null);
+        assertEquals(200, boot.status(), boot.body());
+        assertTrue(boot.body().contains("\"scene\":\"STATION\""), boot.body());
+        assertTrue(boot.body().contains("\"id\":\"p-"), "fichas de los jugadores por defecto: " + boot.body());
+        assertTrue(boot.body().contains("\"code\":\"EVAC\",\"name\":null"), "la TV ve el plano como los jugadores");
+
+        // la TV solo lee; los jugadores no ven la mesa
+        assertEquals(403, call("GET", "/api/player/me", tv, null).status());
+        assertEquals(403, call("PUT", "/api/master/display", tv, "{}").status());
+        assertEquals(403, call("GET", "/api/display/bootstrap", ana.token(), null).status());
+
+        // el máster sube un mapa
+        byte[] png = {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10, 1, 2, 3, 4};
+        Resp upload = upload("/api/master/maps?name=Laboratorio&width=64&height=32", "image/png", png);
+        assertEquals(201, upload.status(), upload.body());
+        long mapId = Long.parseLong(Pattern.compile("\"id\":(\\d+)").matcher(upload.body()).results().findFirst().orElseThrow().group(1));
+        assertEquals(415, upload("/api/master/maps?name=x&width=64&height=32", "image/gif", png).status(), "solo JPG, PNG o WEBP");
+        assertEquals(409, upload("/api/master/maps?name=x&width=2&height=2", "image/png", png).status(), "dimensiones no válidas");
+
+        // la TV descarga la imagen tal cual
+        HttpResponse<byte[]> img = HTTP.send(HttpRequest.newBuilder(URI.create(base() + "/api/display/maps/" + mapId + "/image"))
+                .header("Authorization", "Bearer " + tv).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, img.statusCode());
+        assertEquals("image/png", img.headers().firstValue("Content-Type").orElse(""));
+        assertTrue(java.util.Arrays.equals(png, img.body()));
+
+        // la TV recibe el cambio en tiempo real; un jugador no puede suscribirse a la mesa
+        WebSocketStompClient client = stompClient();
+        BlockingQueue<String> tvInbox = new LinkedBlockingQueue<>();
+        StompSession tvSession = connect(client, tv, new CountDownLatch(1));
+        String sessionId = field(tvJoin.body(), "sessionId");
+        subscribe(tvSession, "/topic/session/" + sessionId + "/display", tvInbox);
+        Thread.sleep(500);
+
+        // el servidor corrige lo que llega: coordenadas fuera de rango, color inválido, niebla mal formada
+        String scene = "MAP:" + mapId;
+        String state = "{\"rev\":\"t1\",\"scene\":\"" + scene + "\",\"scenes\":{\"" + scene + "\":{\"tokens\":["
+                + "{\"id\":\"npc-1\",\"label\":\"Infectado\",\"color\":\"rojo\",\"x\":5,\"y\":-1,\"visible\":true}],"
+                + "\"fog\":{\"enabled\":true,\"cols\":4,\"rows\":2,\"revealed\":\"1x\"}},\"MAP:999999\":{\"tokens\":[]}},"
+                + "\"overlay\":{\"type\":\"ALERT\",\"title\":\"ALERTA\",\"text\":\"Brecha en el sector 17\"},"
+                + "\"glitch\":true,\"showCountdown\":true}";
+        Resp saved = call("PUT", "/api/master/display", master.token(), state);
+        assertEquals(200, saved.status(), saved.body());
+        assertTrue(saved.body().contains("\"x\":1.0,\"y\":0.0"), saved.body());
+        assertTrue(saved.body().contains("\"color\":\"#ff4d4d\""), saved.body());
+        assertTrue(saved.body().contains("\"revealed\":\"10000000\""), saved.body());
+        assertFalse(saved.body().contains("MAP:999999"), "las escenas de mapas inexistentes se descartan");
+
+        String pushed = tvInbox.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pushed, "la TV debe recibir el estado nuevo");
+        assertTrue(pushed.contains("\"type\":\"DISPLAY\"") && pushed.contains("Brecha en el sector 17"), pushed);
+        tvSession.disconnect();
+
+        CountDownLatch rejected = new CountDownLatch(1);
+        StompSession anaSession = connect(client, ana.token(), rejected);
+        subscribe(anaSession, "/topic/session/" + sessionId + "/display", new LinkedBlockingQueue<>());
+        assertTrue(rejected.await(5, TimeUnit.SECONDS) || waitUntil(() -> !anaSession.isConnected(), 3000),
+                "un jugador no puede suscribirse a la pantalla de mesa");
+
+        // al borrar el mapa que está en pantalla se vuelve al plano de la estación
+        assertEquals(204, call("DELETE", "/api/master/maps/" + mapId, master.token(), null).status());
+        String after = call("GET", "/api/display/bootstrap", tv, null).body();
+        assertTrue(after.contains("\"scene\":\"STATION\""), after);
+        assertFalse(after.contains(scene), after);
+    }
+
+    private Resp upload(String path, String contentType, byte[] body) throws Exception {
+        HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(URI.create(base() + path))
+                .header("Authorization", "Bearer " + master.token())
+                .header("Content-Type", contentType)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body)).build(), HttpResponse.BodyHandlers.ofString());
+        return new Resp(r.statusCode(), r.body());
+    }
+
     // ---------------------------------------------------------------- helpers
 
     /** Id del elemento cuyo campo {@code field} empieza por {@code valuePrefix} (DTOs con id, playerId, campo...). */

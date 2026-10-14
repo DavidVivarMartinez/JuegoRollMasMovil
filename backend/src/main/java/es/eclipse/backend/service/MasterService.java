@@ -92,15 +92,18 @@ public class MasterService {
 
         return new OverviewDto(SessionDto.from(session), overview, missions.forSession(sessionId),
                 inventory.forSession(sessionId), files.forSession(sessionId), map.forSession(sessionId),
-                accessCodes(sessionId, crew), Instant.now());
+                accessCodes(sessionId, crew), presence.connectedPlayers(sessionId), Instant.now());
     }
 
-    /** Máster y jugadores, marcando quién sigue con el código de por defecto (público en el repositorio). */
+    /** Máster, pantalla de mesa y jugadores, marcando quién sigue con el código de por defecto (público en el repositorio). */
     private List<AccessCodeDto> accessCodes(UUID sessionId, List<Player> crew) {
         Set<String> defaultHashes = new HashSet<>();
         AppProperties.Seed seed = props.seed();
         if (seed.masterCode() != null) {
             defaultHashes.add(tokens.sha256Hex(tokens.normalizeCode(seed.masterCode())));
+        }
+        if (seed.displayCode() != null) {
+            defaultHashes.add(tokens.sha256Hex(tokens.normalizeCode(seed.displayCode())));
         }
         for (AppProperties.SeedPlayer sp : seed.players()) {
             if (sp.code() != null) {
@@ -108,6 +111,7 @@ public class MasterService {
             }
         }
         List<Player> everyone = new ArrayList<>(players.findBySessionIdAndRoleOrderByCreatedAtAsc(sessionId, Role.MASTER));
+        everyone.addAll(players.findBySessionIdAndRoleOrderByCreatedAtAsc(sessionId, Role.DISPLAY));
         everyone.addAll(crew);
         return everyone.stream()
                 .map(p -> new AccessCodeDto(p.getId(), p.getName(), p.getRole(), p.getCharacterName(),

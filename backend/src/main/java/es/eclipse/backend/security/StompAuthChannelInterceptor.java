@@ -1,5 +1,6 @@
 package es.eclipse.backend.security;
 
+import es.eclipse.backend.domain.Role;
 import es.eclipse.backend.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Component;
 /**
  * Autenticación y autorización del canal STOMP.
  * <p>CONNECT: valida el token (cabecera nativa {@code Authorization: Bearer ...}) y fija el usuario de la sesión.
- * SUBSCRIBE: solo permite colas propias y los topics de la propia partida (el del máster, solo al máster).
+ * SUBSCRIBE: solo permite colas propias y los topics de la propia partida (el del máster, solo al máster;
+ * el de la pantalla de mesa, al máster y a la TV).
  * SEND: solo destinos {@code /app/**}.
  * Cualquier violación cierra la conexión con un frame ERROR.
  */
@@ -88,6 +90,9 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
             return;
         }
         if (destination.equals(sessionTopic + "/master") && principal.isMaster()) {
+            return;
+        }
+        if (destination.equals(sessionTopic + "/display") && (principal.isMaster() || principal.role() == Role.DISPLAY)) {
             return;
         }
         throw new AccessDeniedException("SUSCRIPCION_NO_PERMITIDA");

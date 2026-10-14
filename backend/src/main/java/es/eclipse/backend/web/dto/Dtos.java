@@ -189,7 +189,7 @@ public final class Dtos {
     /** Vista completa del máster: jugadores más todo el contenido de la partida (las listas incluyen a quién pertenece). */
     public record OverviewDto(SessionDto session, List<PlayerOverviewDto> players, List<MissionDto> missions,
                               List<ItemDto> items, List<FileDto> files, List<SectorDto> map,
-                              List<AccessCodeDto> accessCodes, Instant serverTime) {}
+                              List<AccessCodeDto> accessCodes, Set<UUID> connected, Instant serverTime) {}
 
     public record PlayerModulesDto(UUID playerId, List<ModuleStateDto> modules) {}
 
