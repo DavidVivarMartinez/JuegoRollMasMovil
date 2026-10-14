@@ -4,9 +4,11 @@ spring:
   config:
     import: classpath:game-content.yml   # misiones, archivos, objetos y mapa iniciales (prefijo game.*)
   datasource:
-    url: jdbc:postgresql://localhost:5432/eclipse
-    username: eclipse
-    password: eclipse
+    # En local lo sobreescribe docker compose; en Render llegan DB_* desde render.yaml.
+    # Para Neon u otro Postgres externo basta con SPRING_DATASOURCE_URL / _USERNAME / _PASSWORD.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:eclipse}?sslmode=${DB_SSLMODE:prefer}
+    username: ${DB_USER:eclipse}
+    password: ${DB_PASSWORD:eclipse}
   jpa:
     open-in-view: false
     hibernate:
@@ -22,8 +24,8 @@ spring:
       enabled: true
 
 server:
-  # 8090 porque el 8080 de este PC lo usa otro contenedor de Docker
-  port: 8090
+  # 8090 en local (el 8080 de este PC lo usa otro contenedor de Docker); en Render llega por PORT
+  port: ${PORT:8090}
   forward-headers-strategy: framework
 
 management:

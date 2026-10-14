@@ -1,5 +1,6 @@
 import { Client, type IMessage } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
+import { wsUrl } from "./config";
 import type { ServerEvent } from "./types";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected";
@@ -18,11 +19,6 @@ export interface RealtimeOptions {
 const SOCKET_OPEN = 1;
 /** Si el móvil estuvo bloqueado más de esto, damos el socket por muerto y reconectamos sin esperar al heartbeat. */
 const STALE_AFTER_MS = 8_000;
-
-function brokerUrl(): string {
-  const proto = window.location.protocol === "https:" ? "wss" : "ws";
-  return `${proto}://${window.location.host}/ws`;
-}
 
 /**
  * Conexión STOMP sobre WebSocket con reconexión automática. Los callbacks se guardan en refs para que
@@ -48,7 +44,7 @@ export function useRealtime(options: RealtimeOptions): ConnectionStatus {
     }
     const destinations = destinationsKey.split("|").filter(Boolean);
     const client = new Client({
-      brokerURL: brokerUrl(),
+      brokerURL: wsUrl(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 2500,
       heartbeatIncoming: 10000,

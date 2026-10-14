@@ -64,7 +64,7 @@ public class SecurityConfig {
         cfg.setAllowCredentials(false);
         cfg.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", cfg);
+        source.registerCorsConfiguration("/**", cfg); // API y /actuator/health (ping de mantenimiento del frontend)
         return source;
     }
 }

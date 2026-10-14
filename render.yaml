@@ -1,0 +1,63 @@
+# Blueprint de Render: backend (Docker) + PostgreSQL.
+# En Render: New > Blueprint > conectar este repositorio. Pedirá los códigos de acceso al crearlo.
+# El PostgreSQL gratuito de Render caduca a los 30 días; para algo estable, cámbialo por Neon
+# definiendo SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD.
+
+services:
+  - type: web
+    name: eclipse-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free            # cambia a "starter" el mes de la partida para que no se duerma
+    region: frankfurt
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
+      # Dominio del frontend. Al principio vale cualquier *.netlify.app; luego pon el exacto.
+      - key: FRONTEND_ORIGIN
+        value: https://*.netlify.app
+      # Base de datos (rellenado automáticamente desde el servicio de abajo)
+      - key: DB_HOST
+        fromDatabase:
+          name: eclipse-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: eclipse-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: eclipse-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: eclipse-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: eclipse-db
+          property: password
+      # Códigos de acceso reales: se piden al crear el Blueprint (no van en el repositorio)
+      - key: APP_SEED_MASTER_CODE
+        sync: false
+      - key: APP_SEED_PLAYERS_0_CODE
+        sync: false
+      - key: APP_SEED_PLAYERS_1_CODE
+        sync: false
+      - key: APP_SEED_PLAYERS_2_CODE
+        sync: false
+      - key: APP_SEED_PLAYERS_3_CODE
+        sync: false
+
+databases:
+  - name: eclipse-db
+    plan: free
+    region: frankfurt
+    databaseName: eclipse
+    user: eclipse
+    postgresMajorVersion: "17"

@@ -1,0 +1,27 @@
+# Netlify: frontend estatico. Configura VITE_API_URL en Site settings > Environment variables
+# con la URL del backend en Render (sin barra final), p. ej. https://eclipse-backend.onrender.com
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Rutas de la SPA (/player, /master) -> index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# El service worker y el manifest nunca deben quedarse cacheados
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"

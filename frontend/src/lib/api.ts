@@ -1,4 +1,5 @@
 import { clearSession, loadSession, UNAUTHORIZED_EVENT } from "./auth";
+import { apiUrl } from "./config";
 import type {
   ApiProblem,
   AuditEntry,
@@ -42,7 +43,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (session) headers.Authorization = `Bearer ${session.token}`;
 
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),

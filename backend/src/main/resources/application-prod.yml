@@ -1,0 +1,20 @@
+# Perfil de produccion (SPRING_PROFILES_ACTIVE=prod). Todo lo sensible llega por variables de entorno.
+spring:
+  docker:
+    compose:
+      enabled: false
+
+app:
+  seed:
+    print-codes: false
+  cors:
+    # Dominio del frontend (Netlify). Admite patrones: https://*.netlify.app o el dominio exacto.
+    allowed-origins:
+      - ${FRONTEND_ORIGIN:https://*.netlify.app}
+  realtime:
+    allowed-origin-patterns:
+      - ${FRONTEND_ORIGIN:https://*.netlify.app}
+
+logging:
+  level:
+    es.eclipse: INFO

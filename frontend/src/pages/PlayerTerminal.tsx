@@ -12,6 +12,7 @@ import { api, ApiError } from "../lib/api";
 import { clearSession, loadSession } from "../lib/auth";
 import { notify, primeAudio } from "../lib/notify";
 import { useRealtime } from "../lib/realtime";
+import { useKeepAlive } from "../lib/keepAlive";
 import { useWakeLock } from "../lib/wakeLock";
 import {
   CLASSIFICATION_LABEL,
@@ -112,6 +113,7 @@ export default function PlayerTerminal() {
   const [clockOffset, setClockOffset] = useState(0);
 
   useWakeLock(); // pantalla encendida durante la partida
+  useKeepAlive(); // evita que el backend gratuito de Render se duerma mientras hay un terminal abierto
 
   const showToast = useCallback((text: string) => {
     setToast(text);

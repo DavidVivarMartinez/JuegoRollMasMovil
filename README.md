@@ -171,12 +171,44 @@ suscripción no permitida.
 Cada evento llega como `{ "type": "...", "payload": {...}, "ts": "..." }`. Al reconectar, el cliente vuelve a pedir
 `/api/player/me` y `/api/player/messages` y descarta duplicados por id.
 
-## Producción (resumen)
+## Despliegue: backend en Render, frontend en Netlify
 
-1. `cd frontend && npm run build` y copiar `frontend/dist/*` a `backend/src/main/resources/static/`
-   (el backend ya reenvía `/player` y `/master` a `index.html`).
-2. `cd backend && ./mvnw -DskipTests package` → `target/backend-0.0.1-SNAPSHOT.jar`.
-3. Servir detrás de un proxy HTTPS (Caddy, nginx) que también pase WebSocket en `/ws`. Con certificado válido los móviles
-   pueden instalarla como app sin avisos.
-   Variables: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`,
-   `SPRING_DOCKER_COMPOSE_ENABLED=false`, `APP_SEED_PRINT_CODES=false` y los códigos reales.
+El repositorio ya trae todo lo necesario: `render.yaml` (Blueprint con el servicio Docker y un PostgreSQL),
+`backend/Dockerfile`, el perfil `prod` y `netlify.toml`. El móvil habla con Render directamente para `/api` y `/ws`
+(Netlify no reenvía WebSockets), por eso el frontend necesita la URL del backend al compilar.
+
+### 1. Backend en Render
+
+1. En Render: **New → Blueprint**, conecta el repositorio `JuegoRollMasMovil` y acepta `render.yaml`.
+2. Te pedirá los cinco códigos de acceso (`APP_SEED_MASTER_CODE` y `APP_SEED_PLAYERS_0..3_CODE`). Pon los reales:
+   son los que teclearán los móviles. El orden de los jugadores es el de `application.yml`: David, Laura, Carlos, Ana.
+3. Crea los servicios. El primer arranque tarda unos minutos (compila la imagen). Cuando el health check esté en verde,
+   la URL será `https://eclipse-backend.onrender.com` (o con sufijo si el nombre estaba cogido). Apúntala.
+4. Comprueba `https://<tu-backend>/actuator/health` → `{"status":"UP"}`.
+
+Notas:
+- El plan **free** se apaga tras 15 minutos sin tráfico y tarda ~1 minuto en despertar. La web hace un ping cada
+  4 minutos mientras hay un terminal abierto, así que durante la partida no se duerme; aun así, para el día de la
+  partida es más seguro pasarlo a **starter** (7 $/mes, se puede volver a free después). Abre el panel del máster
+  un par de minutos antes de empezar.
+- El PostgreSQL gratuito de Render **caduca a los 30 días** y se borra. Para algo duradero usa Neon (gratis):
+  en el servicio de Render define `SPRING_DATASOURCE_URL=jdbc:postgresql://<host>/<db>?sslmode=require`,
+  `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`, y elimina las variables `DB_*`.
+- `FRONTEND_ORIGIN` empieza en `https://*.netlify.app`. Cuando tengas el dominio exacto de Netlify, cámbialo ahí
+  (es lo que permite CORS y el WebSocket desde el frontend).
+
+### 2. Frontend en Netlify
+
+1. En Netlify: **Add new site → Import an existing project**, elige el repositorio. `netlify.toml` ya fija
+   `base = frontend`, `npm run build` y `publish = dist`.
+2. Antes del primer deploy, en **Site configuration → Environment variables** añade
+   `VITE_API_URL = https://<tu-backend>.onrender.com` (sin barra final).
+3. Deploy. La web queda en `https://<nombre>.netlify.app` con HTTPS real: los móviles pueden instalarla desde
+   «Añadir a pantalla de inicio» sin avisos, también en iPhone.
+4. Si cambias el nombre del sitio o pones dominio propio, actualiza `FRONTEND_ORIGIN` en Render.
+
+### Alternativa: todo en un solo host
+
+`cd frontend && npm run build`, copiar `frontend/dist/*` a `backend/src/main/resources/static/` y desplegar solo el backend
+(ya reenvía `/player` y `/master` a `index.html`). Sin CORS ni `VITE_API_URL`; se pierde la CDN de Netlify, que para
+cinco móviles no importa.

@@ -10,6 +10,7 @@ import StatusDot from "../components/StatusDot";
 import { api, ApiError, type FileInput, type ItemInput, type MissionInput } from "../lib/api";
 import { clearSession, loadSession } from "../lib/auth";
 import { useRealtime } from "../lib/realtime";
+import { useKeepAlive } from "../lib/keepAlive";
 import { useWakeLock } from "../lib/wakeLock";
 import {
   ALL_MODULES,
@@ -144,6 +145,7 @@ export default function MasterPanel() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useWakeLock();
+  useKeepAlive();
 
   const showError = useCallback((e: unknown) => {
     const text = e instanceof ApiError ? `${e.code ?? e.status}: ${e.message}` : "SIN RESPUESTA DEL SERVIDOR";
