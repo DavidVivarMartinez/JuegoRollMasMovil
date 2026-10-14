@@ -572,9 +572,12 @@ export default function MasterPanel() {
             <SubTitle>ARCHIVOS DE LA ESTACIÓN</SubTitle>
             <FileManager files={overview?.files ?? []} scopePlayerId={null} onCreate={createFile} onUpdate={updateFile} onDelete={deleteFile} />
           </div>
-          <div id="access-codes" className="scroll-mt-4">
-            <AccessCodes codes={overview?.accessCodes ?? []} onChanged={() => void resync()} onError={showError} />
-          </div>
+          {/* Solo si el backend ya gestiona códigos (una versión anterior no envía accessCodes) */}
+          {overview?.accessCodes && (
+            <div id="access-codes" className="scroll-mt-4">
+              <AccessCodes codes={overview.accessCodes} onChanged={() => void resync()} onError={showError} />
+            </div>
+          )}
         </section>
 
         {/* Registro */}
