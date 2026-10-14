@@ -85,4 +85,7 @@ public final class Requests {
     public record UpdateSectorRequest(SectorStatus status, @Size(max = 500) String note) {}
 
     public record CountdownRequest(@Size(max = 120) String label, @Min(1) @Max(86_400) int seconds) {}
+
+    /** Código vacío o nulo = generar uno aleatorio. */
+    public record ChangeCodeRequest(@Size(max = 40) String code) {}
 }

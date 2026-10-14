@@ -280,6 +280,41 @@ class EclipseFlowTests {
         assertEquals(200, call("DELETE", "/api/master/countdown", master.token(), null).status());
     }
 
+    @Test
+    void masterChangesAccessCodesAndDefaultsAreFlagged() throws Exception {
+        String overview = call("GET", "/api/master/overview", master.token(), null).body();
+        assertTrue(overview.contains("\"accessCodes\""), overview);
+        assertTrue(overview.contains("\"name\":\"Laura\",\"role\":\"PLAYER\",\"characterName\":\"Médica\",\"defaultCode\":true"), overview);
+        String lauraId = Pattern.compile("\"playerId\":\"([^\"]+)\",\"name\":\"Laura\"").matcher(overview).results()
+                .findFirst().orElseThrow().group(1);
+
+        // código elegido por el máster
+        Resp custom = call("POST", "/api/master/players/" + lauraId + "/code", master.token(), "{\"code\":\"med-test-99\"}");
+        assertEquals(200, custom.status(), custom.body());
+        assertTrue(custom.body().contains("\"code\":\"MED-TEST-99\""), custom.body());
+        assertEquals(401, call("POST", "/api/session/join", null, "{\"code\":\"MED-2048\"}").status(), "el código viejo ya no vale");
+        assertEquals(200, call("POST", "/api/session/join", null, "{\"code\":\"MEDTEST99\"}").status());
+        assertTrue(call("GET", "/api/master/overview", master.token(), null).body()
+                .contains("\"name\":\"Laura\",\"role\":\"PLAYER\",\"characterName\":\"Médica\",\"defaultCode\":false"));
+
+        // repetido o demasiado corto: rechazado
+        assertEquals(409, call("POST", "/api/master/players/" + lauraId + "/code", master.token(), "{\"code\":\"ING-7731\"}").status());
+        assertEquals(409, call("POST", "/api/master/players/" + lauraId + "/code", master.token(), "{\"code\":\"ab\"}").status());
+
+        // generado por el servidor
+        Resp generated = call("POST", "/api/master/players/" + lauraId + "/code", master.token(), null);
+        assertEquals(200, generated.status(), generated.body());
+        String code = field(generated.body(), "code");
+        assertTrue(code.matches("MED-[A-Z2-9]{4}"), code);
+        assertEquals(200, call("POST", "/api/session/join", null, "{\"code\":\"" + code + "\"}").status());
+
+        // un jugador no puede cambiar códigos
+        assertEquals(403, call("POST", "/api/master/players/" + lauraId + "/code", david.token(), null).status());
+
+        // dejar a Laura como estaba para el resto de pruebas
+        assertEquals(200, call("POST", "/api/master/players/" + lauraId + "/code", master.token(), "{\"code\":\"MED-2048\"}").status());
+    }
+
     // ---------------------------------------------------------------- helpers
 
     /** Id del elemento cuyo campo {@code field} empieza por {@code valuePrefix} (DTOs con id, playerId, campo...). */

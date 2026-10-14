@@ -15,5 +15,7 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
 
     Optional<Player> findByIdAndSessionIdAndRole(UUID id, UUID sessionId, Role role);
 
+    Optional<Player> findByIdAndSessionId(UUID id, UUID sessionId);
+
     List<Player> findBySessionIdAndRoleOrderByCreatedAtAsc(UUID sessionId, Role role);
 }

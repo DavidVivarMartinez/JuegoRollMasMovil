@@ -16,6 +16,21 @@ public class TokenService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final HexFormat HEX = HexFormat.of();
 
+    /** Caracteres sin ambigüedad al teclear en el móvil (sin 0/O, 1/I/L). */
+    private static final String CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+    /** Código legible aleatorio: {@code PREFIJO-XXXX} (o {@code PREFIJO-XXXX-XXXX} con dos grupos). */
+    public String newAccessCode(String prefix, int groups) {
+        StringBuilder sb = new StringBuilder(prefix);
+        for (int g = 0; g < groups; g++) {
+            sb.append('-');
+            for (int i = 0; i < 4; i++) {
+                sb.append(CODE_ALPHABET.charAt(RANDOM.nextInt(CODE_ALPHABET.length())));
+            }
+        }
+        return sb.toString();
+    }
+
     public String newToken() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);

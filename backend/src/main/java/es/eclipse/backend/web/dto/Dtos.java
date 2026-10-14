@@ -180,9 +180,16 @@ public final class Dtos {
     public record PlayerOverviewDto(PlayerSummaryDto player, boolean connected, PlayerStateDto state,
                                     List<ModuleStateDto> modules, Instant tokenIssuedAt) {}
 
+    /** Estado del código de acceso de un participante. El código nunca se devuelve: solo si sigue siendo el de por defecto. */
+    public record AccessCodeDto(UUID playerId, String name, Role role, String characterName, boolean defaultCode) {}
+
+    /** Código recién cambiado: es la única vez que se devuelve en claro. */
+    public record CodeChangedDto(UUID playerId, String name, String code) {}
+
     /** Vista completa del máster: jugadores más todo el contenido de la partida (las listas incluyen a quién pertenece). */
     public record OverviewDto(SessionDto session, List<PlayerOverviewDto> players, List<MissionDto> missions,
-                              List<ItemDto> items, List<FileDto> files, List<SectorDto> map, Instant serverTime) {}
+                              List<ItemDto> items, List<FileDto> files, List<SectorDto> map,
+                              List<AccessCodeDto> accessCodes, Instant serverTime) {}
 
     public record PlayerModulesDto(UUID playerId, List<ModuleStateDto> modules) {}
 

@@ -3,6 +3,7 @@ import { apiUrl } from "./config";
 import type {
   ApiProblem,
   AuditEntry,
+  CodeChanged,
   FileClassification,
   FileStatus,
   GameFile,
@@ -122,6 +123,9 @@ export const api = {
     setState: (playerId: string, patch: { health?: number; infection?: number; privateVars?: string }) =>
       request<PlayerState>("PATCH", `/api/master/players/${playerId}/state`, patch),
     revoke: (playerId: string) => request<void>("POST", `/api/master/players/${playerId}/revoke`),
+    /** Sin código: el servidor genera uno aleatorio. Devuelve el código en claro (única vez). */
+    changeCode: (playerId: string, code?: string) =>
+      request<CodeChanged>("POST", `/api/master/players/${playerId}/code`, code ? { code } : {}),
     setSession: (status: SessionStatus) => request<SessionDto>("PATCH", "/api/master/session", { status }),
     startCountdown: (label: string, seconds: number) =>
       request<SessionDto>("POST", "/api/master/countdown", { label, seconds }),

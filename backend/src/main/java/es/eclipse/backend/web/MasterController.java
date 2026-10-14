@@ -14,6 +14,7 @@ import es.eclipse.backend.service.ModuleService;
 import es.eclipse.backend.service.PlayerActionService;
 import es.eclipse.backend.service.PlayerStateService;
 import es.eclipse.backend.web.dto.Dtos.AuditEntryDto;
+import es.eclipse.backend.web.dto.Dtos.CodeChangedDto;
 import es.eclipse.backend.web.dto.Dtos.FileDto;
 import es.eclipse.backend.web.dto.Dtos.ItemDto;
 import es.eclipse.backend.web.dto.Dtos.MessageDto;
@@ -24,6 +25,7 @@ import es.eclipse.backend.web.dto.Dtos.PlayerActionDto;
 import es.eclipse.backend.web.dto.Dtos.PlayerStateDto;
 import es.eclipse.backend.web.dto.Dtos.SectorDto;
 import es.eclipse.backend.web.dto.Dtos.SessionDto;
+import es.eclipse.backend.web.dto.Requests.ChangeCodeRequest;
 import es.eclipse.backend.web.dto.Requests.CountdownRequest;
 import es.eclipse.backend.web.dto.Requests.FileRequest;
 import es.eclipse.backend.web.dto.Requests.ItemRequest;
@@ -141,6 +143,14 @@ public class MasterController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void revoke(@AuthenticationPrincipal EclipsePrincipal me, @PathVariable UUID playerId) {
         authService.revokeBy(me, playerId);
+    }
+
+    /** Cambia el código de acceso de un participante (también el del propio máster). Sin código, genera uno. */
+    @PostMapping("/players/{playerId}/code")
+    public CodeChangedDto changeCode(@AuthenticationPrincipal EclipsePrincipal me, @PathVariable UUID playerId,
+                                     @Valid @RequestBody(required = false) ChangeCodeRequest request) {
+        AuthService.CodeChange change = authService.changeCode(me, playerId, request == null ? null : request.code());
+        return new CodeChangedDto(change.playerId(), change.name(), change.code());
     }
 
     // ---- misiones

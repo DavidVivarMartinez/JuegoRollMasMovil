@@ -76,6 +76,11 @@ public class Player {
         this.tokenIssuedAt = null;
     }
 
+    /** Nuevo código de acceso (solo se guarda el hash). Los dispositivos ya conectados siguen dentro. */
+    public void changeAccessCode(String accessCodeHash) {
+        this.accessCodeHash = accessCodeHash;
+    }
+
     public UUID getId() { return id; }
     public UUID getSessionId() { return sessionId; }
     public Role getRole() { return role; }

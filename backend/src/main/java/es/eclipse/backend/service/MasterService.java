@@ -1,5 +1,6 @@
 package es.eclipse.backend.service;
 
+import es.eclipse.backend.config.AppProperties;
 import es.eclipse.backend.domain.GameSession;
 import es.eclipse.backend.domain.ModuleState;
 import es.eclipse.backend.domain.Player;
@@ -11,6 +12,8 @@ import es.eclipse.backend.repository.ModuleStateRepository;
 import es.eclipse.backend.repository.PlayerRepository;
 import es.eclipse.backend.repository.PlayerStateRepository;
 import es.eclipse.backend.security.EclipsePrincipal;
+import es.eclipse.backend.security.TokenService;
+import es.eclipse.backend.web.dto.Dtos.AccessCodeDto;
 import es.eclipse.backend.web.dto.Dtos.OverviewDto;
 import es.eclipse.backend.web.dto.Dtos.PlayerOverviewDto;
 import es.eclipse.backend.web.dto.Dtos.PlayerStateDto;
@@ -19,6 +22,8 @@ import es.eclipse.backend.web.dto.Dtos.SessionDto;
 import es.eclipse.backend.web.error.NotFoundException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,11 +48,15 @@ public class MasterService {
     private final InventoryService inventory;
     private final FileService files;
     private final MapService map;
+    private final AppProperties props;
+    private final TokenService tokens;
 
     public MasterService(GameSessionRepository sessions, PlayerRepository players, PlayerStateRepository states,
                          ModuleStateRepository modules, PresenceService presence, RealtimePublisher publisher,
                          AuditService audit, MissionService missions, InventoryService inventory, FileService files,
-                         MapService map) {
+                         MapService map, AppProperties props, TokenService tokens) {
+        this.props = props;
+        this.tokens = tokens;
         this.sessions = sessions;
         this.players = players;
         this.states = states;
@@ -82,7 +91,28 @@ public class MasterService {
                 p.getTokenIssuedAt())).toList();
 
         return new OverviewDto(SessionDto.from(session), overview, missions.forSession(sessionId),
-                inventory.forSession(sessionId), files.forSession(sessionId), map.forSession(sessionId), Instant.now());
+                inventory.forSession(sessionId), files.forSession(sessionId), map.forSession(sessionId),
+                accessCodes(sessionId, crew), Instant.now());
+    }
+
+    /** Máster y jugadores, marcando quién sigue con el código de por defecto (público en el repositorio). */
+    private List<AccessCodeDto> accessCodes(UUID sessionId, List<Player> crew) {
+        Set<String> defaultHashes = new HashSet<>();
+        AppProperties.Seed seed = props.seed();
+        if (seed.masterCode() != null) {
+            defaultHashes.add(tokens.sha256Hex(tokens.normalizeCode(seed.masterCode())));
+        }
+        for (AppProperties.SeedPlayer sp : seed.players()) {
+            if (sp.code() != null) {
+                defaultHashes.add(tokens.sha256Hex(tokens.normalizeCode(sp.code())));
+            }
+        }
+        List<Player> everyone = new ArrayList<>(players.findBySessionIdAndRoleOrderByCreatedAtAsc(sessionId, Role.MASTER));
+        everyone.addAll(crew);
+        return everyone.stream()
+                .map(p -> new AccessCodeDto(p.getId(), p.getName(), p.getRole(), p.getCharacterName(),
+                        defaultHashes.contains(p.getAccessCodeHash())))
+                .toList();
     }
 
     @Transactional

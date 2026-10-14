@@ -183,6 +183,21 @@ export interface PlayerOverview {
   tokenIssuedAt: string | null;
 }
 
+export interface AccessCode {
+  playerId: string;
+  name: string;
+  role: Role;
+  characterName: string | null;
+  /** true si sigue con el código de ejemplo del repositorio (público) */
+  defaultCode: boolean;
+}
+
+export interface CodeChanged {
+  playerId: string;
+  name: string;
+  code: string;
+}
+
 export interface Overview {
   session: SessionDto;
   players: PlayerOverview[];
@@ -190,6 +205,7 @@ export interface Overview {
   items: Item[];
   files: GameFile[];
   map: Sector[];
+  accessCodes: AccessCode[];
   serverTime: string;
 }
 

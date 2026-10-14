@@ -1,5 +1,5 @@
 # Blueprint de Render: backend (Docker) + PostgreSQL.
-# En Render: New > Blueprint > conectar este repositorio. Pedirá los códigos de acceso al crearlo.
+# En Render: New > Blueprint > conectar este repositorio. Solo pide un nombre para el Blueprint (cualquiera).
 # El PostgreSQL gratuito de Render caduca a los 30 días; para algo estable, cámbialo por Neon
 # definiendo SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD.
 
@@ -43,17 +43,8 @@ services:
         fromDatabase:
           name: eclipse-db
           property: password
-      # Códigos de acceso reales: se piden al crear el Blueprint (no van en el repositorio)
-      - key: APP_SEED_MASTER_CODE
-        sync: false
-      - key: APP_SEED_PLAYERS_0_CODE
-        sync: false
-      - key: APP_SEED_PLAYERS_1_CODE
-        sync: false
-      - key: APP_SEED_PLAYERS_2_CODE
-        sync: false
-      - key: APP_SEED_PLAYERS_3_CODE
-        sync: false
+      # Los códigos de acceso se cargan solos en la base de datos al primer arranque (los de application.yml).
+      # Cámbialos desde el panel del máster: ESTACIÓN > CÓDIGOS DE ACCESO.
 
 databases:
   - name: eclipse-db

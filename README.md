@@ -64,8 +64,9 @@ Al arrancar, el backend crea la partida de ejemplo y escribe en el log los códi
 | Ana · Científica | `CIE-6618` |
 
 Los códigos no distinguen mayúsculas, espacios ni guiones (`cie 6618` vale). Están en `backend/src/main/resources/application.yml`
-bajo `app.seed`; cámbialos antes de la partida real (por ejemplo con variables de entorno `APP_SEED_MASTER_CODE`,
-`APP_SEED_PLAYERS_0_CODE`, …). Solo se guardan hashes en la base de datos.
+bajo `app.seed` y se cargan solos en la base de datos la primera vez que arranca el backend. Como son públicos en
+GitHub, cámbialos desde el panel del máster: **ESTACIÓN → CÓDIGOS DE ACCESO** (generar aleatorios o escribir los tuyos).
+El panel avisa mientras quede alguno de ejemplo. Solo se guardan hashes: un código se ve en claro únicamente al cambiarlo.
 
 ### Probar en los móviles
 
@@ -181,9 +182,8 @@ El repositorio ya trae todo lo necesario: `render.yaml` (Blueprint con el servic
 
 1. Abre https://render.com/deploy?repo=https://github.com/DavidVivarMartinez/JuegoRollMasMovil (equivale a
    **New → Blueprint** con este repositorio) y acepta `render.yaml`.
-2. Te pedirá los cinco códigos de acceso (`APP_SEED_MASTER_CODE` y `APP_SEED_PLAYERS_0..3_CODE`). Pon los reales:
-   son los que teclearán los móviles. El orden de los jugadores es el de `application.yml`: David, Laura, Carlos, Ana.
-3. Crea los servicios. El primer arranque tarda unos minutos (compila la imagen). Cuando el health check esté en verde,
+2. Solo pide un **Blueprint Name**: es una etiqueta, pon cualquiera (por ejemplo `protocolo-eclipse`). Pulsa **Apply**.
+3. Render crea la base de datos y el backend. El primer arranque tarda unos minutos (compila la imagen). Cuando el health check esté en verde,
    la URL será `https://protocolo-eclipse-api.onrender.com` (o con sufijo si el nombre estaba cogido). Apúntala.
 4. Comprueba `https://protocolo-eclipse-api.onrender.com/actuator/health` → `{"status":"UP"}`.
 
