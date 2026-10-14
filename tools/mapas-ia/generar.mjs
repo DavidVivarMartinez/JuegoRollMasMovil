@@ -107,7 +107,11 @@ async function subir(file, nombre) {
   const { token, role } = await login.json();
   if (role !== "MASTER") throw new Error("Ese código no es el del máster");
   const png = readFileSync(file);
-  const params = new URLSearchParams({ name: nombre, width: String(config.ancho), height: String(config.alto) });
+  // tamaño real de la imagen (cabecera IHDR del PNG); si no es un PNG, el de la configuración
+  const isPng = png.subarray(1, 4).toString("ascii") === "PNG";
+  const width = isPng ? png.readUInt32BE(16) : config.ancho;
+  const height = isPng ? png.readUInt32BE(20) : config.alto;
+  const params = new URLSearchParams({ name: nombre, width: String(width), height: String(height) });
   const up = await fetch(`${api}/api/master/maps?${params}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "image/png" },
@@ -119,34 +123,39 @@ async function subir(file, nombre) {
 
 // ---------------------------------------------------------------- principal
 
+// Sin process.exit() tras un fetch: en Windows, Node puede abortar al cerrar conexiones aún abiertas.
 if (subirArchivo) {
   const nombre = nombreSubida ?? basename(subirArchivo).replace(/\.[^.]+$/, "");
   const map = await subir(subirArchivo, nombre);
   console.log(`✓ Subido "${map.name}" (id ${map.id}, ${Math.round(map.sizeBytes / 1024)} KB)`);
-  process.exit(0);
+} else {
+  await generarZonas();
 }
 
-const zonas = zonasPedidas.length ? config.zonas.filter((z) => zonasPedidas.includes(z.id)) : config.zonas;
-if (!zonas.length) {
-  console.error("Zonas disponibles:", config.zonas.map((z) => z.id).join(", "));
-  process.exit(1);
-}
-try {
-  await fetch(`${comfy}/system_stats`);
-} catch {
-  console.error(`No responde ComfyUI en ${comfy}. Arráncalo primero (ver tools/mapas-ia/README.md).`);
-  process.exit(1);
-}
-mkdirSync(salida, { recursive: true });
-
-for (const zona of zonas) {
-  for (let v = 0; v < variantes; v++) {
-    const seed = semillaFija != null ? Number(semillaFija) + v : Math.floor(Math.random() * 2 ** 31);
-    const t0 = Date.now();
-    process.stdout.write(`${zona.nombre} (semilla ${seed})… `);
-    const png = await generar(zona.prompt, seed);
-    const file = join(salida, `${zona.id}-${seed}.png`);
-    writeFileSync(file, png);
-    console.log(`✓ ${Math.round((Date.now() - t0) / 1000)} s → ${file}`);
+async function generarZonas() {
+  const zonas = zonasPedidas.length ? config.zonas.filter((z) => zonasPedidas.includes(z.id)) : config.zonas;
+  if (!zonas.length) {
+    console.error("Zonas disponibles:", config.zonas.map((z) => z.id).join(", "));
+    process.exitCode = 1;
+    return;
+  }
+  try {
+    await fetch(`${comfy}/system_stats`);
+  } catch {
+    console.error(`No responde ComfyUI en ${comfy}. Arráncalo primero (ver tools/mapas-ia/README.md).`);
+    process.exitCode = 1;
+    return;
+  }
+  mkdirSync(salida, { recursive: true });
+  for (const zona of zonas) {
+    for (let v = 0; v < variantes; v++) {
+      const seed = semillaFija != null ? Number(semillaFija) + v : Math.floor(Math.random() * 2 ** 31);
+      const t0 = Date.now();
+      process.stdout.write(`${zona.nombre} (semilla ${seed})… `);
+      const png = await generar(zona.prompt, seed);
+      const file = join(salida, `${zona.id}-${seed}.png`);
+      writeFileSync(file, png);
+      console.log(`✓ ${Math.round((Date.now() - t0) / 1000)} s → ${file}`);
+    }
   }
 }

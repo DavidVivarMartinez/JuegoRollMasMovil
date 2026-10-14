@@ -31,6 +31,12 @@ Para desinstalar basta con borrar las dos carpetas `C:\Users\david\ComfyUI_windo
    ```
    También puedes subirla a mano desde **MESA → SUBIR MAPA**.
 
+   Avisos: subir entra como máster, así que cierra la sesión del máster en otros dispositivos (vuelve a meter el código).
+   El servidor admite 10 entradas por minuto: si subes muchos mapas seguidos, espera un minuto entre tandas.
+
+**Smart App Control** (Windows 11) puede bloquear la primera vez alguna librería de ComfyUI mientras consulta su reputación
+("una directiva de Control de aplicaciones bloqueó este archivo"). Basta con volver a arrancarlo; no hace falta desactivar nada.
+
 ## Cambiar o añadir zonas
 
 Las descripciones están en `zonas.json` (en inglés: el modelo responde mejor). `estilo` se añade a todas las zonas y
