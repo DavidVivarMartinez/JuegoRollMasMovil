@@ -195,7 +195,7 @@ Notas:
 - El PostgreSQL gratuito de Render **caduca a los 30 días** y se borra. Para algo duradero usa Neon (gratis):
   en el servicio de Render define `SPRING_DATASOURCE_URL=jdbc:postgresql://<host>/<db>?sslmode=require`,
   `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`, y elimina las variables `DB_*`.
-- `FRONTEND_ORIGIN` vale `https://polite-kataifi-b05440.netlify.app`, el sitio actual de Netlify. Es lo que permite
+- `FRONTEND_ORIGIN` vale `https://nexus-7-terminal.netlify.app`, el sitio de Netlify. Es lo que permite
   CORS y el WebSocket desde el frontend; si cambias el nombre del sitio, cámbialo también en Render.
 
 ### 2. Frontend en Netlify

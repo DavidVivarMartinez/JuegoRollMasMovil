@@ -7,13 +7,16 @@ spring:
 app:
   seed:
     print-codes: false
+  # Dominio del frontend en Netlify (CORS y WebSocket). FRONTEND_ORIGIN puede añadir otro dominio o patrón
+  # (p. ej. uno propio); el sitio de Netlify actual queda siempre permitido.
   cors:
-    # Dominio del frontend (Netlify). Admite patrones: https://*.netlify.app o el dominio exacto.
     allowed-origins:
-      - ${FRONTEND_ORIGIN:https://*.netlify.app}
+      - https://nexus-7-terminal.netlify.app
+      - ${FRONTEND_ORIGIN:https://nexus-7-terminal.netlify.app}
   realtime:
     allowed-origin-patterns:
-      - ${FRONTEND_ORIGIN:https://*.netlify.app}
+      - https://nexus-7-terminal.netlify.app
+      - ${FRONTEND_ORIGIN:https://nexus-7-terminal.netlify.app}
 
 logging:
   level:

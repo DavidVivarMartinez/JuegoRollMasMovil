@@ -21,7 +21,7 @@ services:
         value: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC
       # Dominio del frontend en Netlify (CORS y WebSocket). Si cambias el nombre del sitio, cámbialo aquí.
       - key: FRONTEND_ORIGIN
-        value: https://polite-kataifi-b05440.netlify.app
+        value: https://nexus-7-terminal.netlify.app
       # Base de datos (rellenado automáticamente desde el servicio de abajo)
       - key: DB_HOST
         fromDatabase:
