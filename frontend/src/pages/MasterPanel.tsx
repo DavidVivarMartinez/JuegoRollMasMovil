@@ -540,18 +540,6 @@ export default function MasterPanel() {
         {/* Tripulación */}
         <section className={`${panel("crew")} gap-3 lg:overflow-y-auto`}>
           <div className="text-[10px] tracking-[0.3em] text-term-dim">TRIPULACIÓN</div>
-          {(overview?.accessCodes ?? []).some((c) => c.defaultCode) && (
-            <button
-              type="button"
-              onClick={() => {
-                setView("station");
-                window.setTimeout(() => document.getElementById("access-codes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-              }}
-              className="min-h-[44px] rounded border border-term-red/60 bg-term-red/10 px-3 py-2 text-left text-[11px] leading-relaxed text-term-red"
-            >
-              Hay códigos de acceso de ejemplo (públicos en GitHub). Cámbialos en ESTACIÓN → CÓDIGOS DE ACCESO ›
-            </button>
-          )}
           {players.length === 0 && <div className="text-xs text-term-faint">Cargando jugadores…</div>}
           {players.map((p) => (
             <PlayerCard
