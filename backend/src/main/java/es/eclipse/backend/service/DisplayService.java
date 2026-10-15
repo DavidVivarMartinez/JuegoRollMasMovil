@@ -81,7 +81,8 @@ public class DisplayService {
                 SessionDto.from(session),
                 currentState(sessionId),
                 maps.listInfo(sessionId),
-                me.isMaster() ? mapService.forSession(sessionId) : mapService.forPlayer(sessionId));
+                me.isMaster() ? mapService.forSession(sessionId) : mapService.forPlayer(sessionId),
+                java.time.Instant.now());
     }
 
     @Transactional(readOnly = true)

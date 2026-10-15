@@ -5,6 +5,7 @@ import TableControl from "../components/TableControl";
 import BottomNav, { type NavItem } from "../components/BottomNav";
 import { Badge, Chip, Field, FileManager, ItemManager, MissionManager } from "../components/ContentManagers";
 import Countdown from "../components/Countdown";
+import CountdownControl from "../components/CountdownControl";
 import Icon from "../components/Icon";
 import { formatTime } from "../components/MessageBubble";
 import StationMap, { MapLegend, SECTOR_TONE } from "../components/StationMap";
@@ -70,7 +71,6 @@ const SECTOR_CHIP_TONE: Record<SectorStatus, "green" | "red" | "cyan" | "amber" 
 };
 const TYPE_LABEL: Record<MessageType, string> = { TEXT: "NORMAL", ALERT: "ALERTA", SYSTEM: "SISTEMA" };
 const FEED_LIMIT = 300;
-const COUNTDOWN_PRESETS = [1, 3, 5, 10, 15];
 
 const NAV_ITEMS: NavItem[] = [
   { key: "crew", label: "TRIPULACIÓN", icon: "crew" },
@@ -640,7 +640,7 @@ export default function MasterPanel() {
         {/* Estación */}
         <section className={`${panel("station")} gap-4 lg:overflow-y-auto`}>
           <div className="text-[10px] tracking-[0.3em] text-term-dim">ESTACIÓN</div>
-          <CountdownControl session={overview?.session ?? null} onChange={applySession} onError={showError} />
+          <CountdownControl session={overview?.session ?? null} offsetMs={clockOffset} onChange={applySession} onError={showError} />
           <MapEditor sectors={overview?.map ?? []} onUpdate={updateSector} />
           <div>
             <SubTitle>OBJETIVOS DE LA TRIPULACIÓN</SubTitle>
@@ -704,6 +704,9 @@ export default function MasterPanel() {
           display={display}
           maps={maps}
           tvOnline={tvOnline}
+          session={overview?.session ?? null}
+          clockOffset={clockOffset}
+          onSessionChange={applySession}
           onChange={changeDisplay}
           onMapsChanged={() => void refreshMaps()}
           onClose={() => setView("crew")}
@@ -938,60 +941,6 @@ function PlayerSheet({
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ---- cuenta atrás
-
-function CountdownControl({ session, onChange, onError }: { session: SessionDto | null; onChange: (s: SessionDto) => void; onError: (e: unknown) => void }) {
-  const [label, setLabel] = useState("SECUENCIA DE DESACOPLE");
-  const [minutes, setMinutes] = useState(5);
-  const active = !!session?.countdownEndsAt;
-  const start = async (mins: number) => {
-    try {
-      onChange(await api.master.startCountdown(label.trim() || "CUENTA ATRÁS", Math.max(1, Math.round(mins * 60))));
-    } catch (e) {
-      onError(e);
-    }
-  };
-  const clear = async () => {
-    try {
-      onChange(await api.master.clearCountdown());
-    } catch (e) {
-      onError(e);
-    }
-  };
-  return (
-    <div className="space-y-3 rounded border border-term-line bg-term-panel p-3">
-      <SubTitle>CUENTA ATRÁS COMÚN</SubTitle>
-      {active ? (
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs text-term-dim">
-            Activa: <span className="text-term-green">{session?.countdownLabel}</span>
-          </div>
-          <button type="button" onClick={() => void clear()} className="min-h-[44px] rounded border border-term-red px-4 text-[11px] tracking-widest text-term-red">
-            CANCELAR
-          </button>
-        </div>
-      ) : (
-        <>
-          <input value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder="Etiqueta" className="h-11 w-full rounded border border-term-line bg-term-bg px-3 text-term-green" />
-          <div className="flex flex-wrap gap-2">
-            {COUNTDOWN_PRESETS.map((m) => (
-              <button key={m} type="button" onClick={() => void start(m)} className="min-h-[44px] rounded border border-term-green/70 px-4 text-[11px] tracking-widest active:bg-term-green/10">
-                {m} MIN
-              </button>
-            ))}
-            <div className="flex items-center gap-1">
-              <input type="number" min={1} max={1440} value={minutes} onChange={(e) => setMinutes(Number(e.target.value) || 1)} className="h-11 w-20 rounded border border-term-line bg-term-bg px-2 text-center text-term-green" />
-              <button type="button" onClick={() => void start(minutes)} className="min-h-[44px] rounded border border-term-line px-3 text-[11px] tracking-widest text-term-dim">
-                INICIAR
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }

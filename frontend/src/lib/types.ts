@@ -313,4 +313,6 @@ export interface DisplayBootstrap {
   state: DisplayState;
   maps: MapImage[];
   sectors: Sector[];
+  /** hora del servidor, para sincronizar la cuenta atrás aunque el reloj del ordenador de la TV vaya mal */
+  serverTime: string;
 }

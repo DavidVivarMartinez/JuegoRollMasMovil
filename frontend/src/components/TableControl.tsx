@@ -11,8 +11,9 @@ import {
 } from "../lib/display";
 import { isVideoType, prepareMedia, useMapImage } from "../lib/mapImages";
 import { canPickScreens, listScreens, openTvWindow, type ScreenInfo } from "../lib/screens";
-import type { DisplayFog, DisplayScene, DisplayState, MapImage, OverlayType, PlayerSummary, Sector } from "../lib/types";
+import type { DisplayFog, DisplayScene, DisplayState, MapImage, OverlayType, PlayerSummary, Sector, SessionDto } from "../lib/types";
 import { Chip } from "./ContentManagers";
+import CountdownControl from "./CountdownControl";
 import Icon from "./Icon";
 import SceneView, { type FogBrush, type SceneTool } from "./SceneView";
 
@@ -35,6 +36,9 @@ export default function TableControl({
   display,
   maps,
   tvOnline,
+  session,
+  clockOffset,
+  onSessionChange,
   onChange,
   onMapsChanged,
   onClose,
@@ -46,6 +50,9 @@ export default function TableControl({
   display: DisplayState | null;
   maps: MapImage[];
   tvOnline: boolean;
+  session: SessionDto | null;
+  clockOffset: number;
+  onSessionChange: (s: SessionDto) => void;
   onChange: (next: DisplayState, immediate?: boolean) => void;
   onMapsChanged: () => void;
   onClose: () => void;
@@ -408,8 +415,22 @@ export default function TableControl({
             INTERFERENCIA
           </Chip>
           <Chip small active={display.showCountdown} onClick={() => onChange({ ...display, showCountdown: !display.showCountdown }, true)}>
-            CUENTA ATRÁS EN TV
+            MOSTRAR CUENTA ATRÁS EN TV
           </Chip>
+        </div>
+        <div className="mt-3">
+          <CountdownControl
+            title="CUENTA ATRÁS (TV Y MÓVILES)"
+            session={session}
+            offsetMs={clockOffset}
+            onChange={onSessionChange}
+            onError={onError}
+          />
+          {session?.countdownEndsAt && !display.showCountdown && (
+            <p className="mt-2 text-[10px] leading-relaxed text-term-amber">
+              Hay una cuenta atrás en marcha, pero está oculta en la TV: activa «MOSTRAR CUENTA ATRÁS EN TV».
+            </p>
+          )}
         </div>
       </Section>
 

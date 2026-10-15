@@ -21,6 +21,7 @@ export default function TvScreen() {
   const sessionId = session?.sessionId ?? "";
 
   const [boot, setBoot] = useState<DisplayBootstrap | null>(null);
+  const [clockOffset, setClockOffset] = useState(0);
   const [failed, setFailed] = useState(false);
   const [fullscreen, setFullscreen] = useState(() => !!document.fullscreenElement);
   const [idle, setIdle] = useState(false);
@@ -32,7 +33,9 @@ export default function TvScreen() {
 
   const resync = useCallback(async () => {
     try {
-      setBoot(await api.display.bootstrap());
+      const b = await api.display.bootstrap();
+      setBoot(b);
+      if (b.serverTime) setClockOffset(Date.parse(b.serverTime) - Date.now());
       setFailed(false);
     } catch (e) {
       if (!(e instanceof ApiError && e.status === 401)) setFailed(true);
@@ -137,7 +140,7 @@ export default function TvScreen() {
       <div className="scanlines pointer-events-none" />
 
       {state?.showCountdown && boot?.session.countdownEndsAt && (
-        <TvCountdown label={boot.session.countdownLabel} endsAt={boot.session.countdownEndsAt} />
+        <TvCountdown label={boot.session.countdownLabel} endsAt={boot.session.countdownEndsAt} offsetMs={clockOffset} />
       )}
 
       {overlay?.type === "BLACKOUT" && (
@@ -208,13 +211,13 @@ function Splash({ subtitle }: { subtitle: string }) {
   );
 }
 
-function TvCountdown({ label, endsAt }: { label: string | null; endsAt: string }) {
+function TvCountdown({ label, endsAt, offsetMs }: { label: string | null; endsAt: string; offsetMs: number }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(t);
   }, []);
-  const total = Math.max(0, Math.ceil((Date.parse(endsAt) - now) / 1000));
+  const total = Math.max(0, Math.ceil((Date.parse(endsAt) - (now + offsetMs)) / 1000));
   const m = Math.floor(total / 60);
   const s = total % 60;
   const tone = total === 0 ? "text-term-red blink" : total <= 10 ? "text-term-red" : total <= 60 ? "text-term-amber" : "text-term-green";

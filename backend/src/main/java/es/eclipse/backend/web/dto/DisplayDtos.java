@@ -2,6 +2,7 @@ package es.eclipse.backend.web.dto;
 
 import es.eclipse.backend.web.dto.Dtos.SectorDto;
 import es.eclipse.backend.web.dto.Dtos.SessionDto;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -35,5 +36,6 @@ public final class DisplayDtos {
     public record Overlay(String type, String title, String text) {}
 
     /** Todo lo que necesita la TV (o el control de mesa del máster) para pintarse al entrar o al reconectar. */
-    public record DisplayBootstrap(SessionDto session, DisplayState state, List<MapImageDto> maps, List<SectorDto> sectors) {}
+    public record DisplayBootstrap(SessionDto session, DisplayState state, List<MapImageDto> maps, List<SectorDto> sectors,
+                                   Instant serverTime) {}
 }
