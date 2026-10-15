@@ -40,8 +40,11 @@ import tools.jackson.databind.json.JsonMapper;
 public class DisplayService {
 
     public static final int MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+    /** Los vídeos se guardan en la base de datos y se cargan enteros en memoria: el plan gratuito no da para más. */
+    public static final int MAX_VIDEO_BYTES = 30 * 1024 * 1024;
     private static final Set<String> OVERLAYS = Set.of("NONE", "BLACKOUT", "ALERT", "MESSAGE");
     private static final Set<String> IMAGE_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final Set<String> VIDEO_TYPES = Set.of("video/mp4", "video/webm");
     private static final Pattern COLOR = Pattern.compile("^#[0-9a-fA-F]{6}$");
     private static final int MAX_SCENES = 60;
     private static final int MAX_TOKENS = 40;
@@ -109,14 +112,15 @@ public class DisplayService {
     @Transactional
     public MapImageDto upload(EclipsePrincipal master, String name, String contentType, int width, int height, byte[] data) {
         String type = contentType == null ? "" : contentType.split(";")[0].trim().toLowerCase();
-        if (!IMAGE_TYPES.contains(type)) {
-            throw new ActionRejectedException("Formato no admitido: usa JPG, PNG o WEBP");
+        boolean video = VIDEO_TYPES.contains(type);
+        if (!video && !IMAGE_TYPES.contains(type)) {
+            throw new ActionRejectedException("Formato no admitido: imágenes JPG, PNG o WEBP; vídeos MP4 o WEBM");
         }
         if (data == null || data.length == 0) {
-            throw new ActionRejectedException("La imagen está vacía");
+            throw new ActionRejectedException("El archivo está vacío");
         }
-        if (data.length > MAX_IMAGE_BYTES) {
-            throw new ActionRejectedException("La imagen supera 8 MB");
+        if (data.length > (video ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) {
+            throw new ActionRejectedException(video ? "El vídeo supera 30 MB" : "La imagen supera 8 MB");
         }
         if (width < 16 || height < 16 || width > 10_000 || height > 10_000) {
             throw new ActionRejectedException("Dimensiones de imagen no válidas");

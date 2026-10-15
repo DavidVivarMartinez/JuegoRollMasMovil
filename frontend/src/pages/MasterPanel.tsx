@@ -163,7 +163,13 @@ export default function MasterPanel() {
   useKeepAlive();
 
   const showError = useCallback((e: unknown) => {
-    const text = e instanceof ApiError ? `${e.code ?? e.status}: ${e.message}` : "SIN RESPUESTA DEL SERVIDOR";
+    // errores del servidor con su código; los del propio panel (formato de vídeo, tamaño...) con su mensaje
+    const text =
+      e instanceof ApiError
+        ? `${e.code ?? e.status}: ${e.message}`
+        : e instanceof Error && !(e instanceof TypeError) && e.message
+          ? e.message.toUpperCase()
+          : "SIN RESPUESTA DEL SERVIDOR";
     setError(text);
     window.setTimeout(() => setError(null), 4000);
   }, []);

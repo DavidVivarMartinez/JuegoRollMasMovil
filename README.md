@@ -33,8 +33,11 @@ Doble clic o tecla **F** para pantalla completa.
 (`PANTALLA-MESA` por defecto, cámbialo en **ESTACIÓN → CÓDIGOS DE ACCESO**); pulsa **PANTALLA COMPLETA** y ya no hace falta tocarlo.
 Todo se controla desde el móvil del máster, pestaña **MESA**:
 
-- **Escena**: reposo (logo de la partida), plano de la estación en vivo o un mapa propio subido como imagen desde el móvil.
-  Las fotos grandes se reducen en el móvil antes de subirlas (máx. 2560 px); se guardan en la base de datos.
+- **Escena**: reposo (logo de la partida), plano de la estación en vivo o un mapa propio subido desde el móvil o el portátil:
+  imagen (JPG, PNG, WEBP; las grandes se reducen antes de subirlas, máx. 2560 px) o **vídeo** para mapas animados
+  (MP4 o WEBM, máx. 30 MB; se reproduce en bucle y sin sonido). Se guardan en la base de datos.
+- **Cada mapa nuevo empieza con la niebla activa y todo cubierto**; al volver a un mapa se conserva lo revelado.
+  El plano de la estación no lleva niebla al empezar (ya oculta los sectores desconocidos).
 - **Fichas**: una por jugador (aparecen solas) y las que añadas para PNJ, infectados u objetos. Arrastra o toca una ficha y
   luego el destino. El ojo la oculta en la tele. Cada escena recuerda sus posiciones.
 - **Niebla de guerra** por casillas (8 a 24 de ancho): pincel REVELAR o CUBRIR pasando el dedo. En la tele es opaca con bordes
@@ -182,7 +185,7 @@ frontend/
 | GET | `/api/display/maps/{id}/image` | TV y máster | Imagen de un mapa |
 | POST | `/api/master/display/link` | máster | Acceso de la pantalla para abrirla en otra ventana (desconecta la TV que hubiera) |
 | PUT | `/api/master/display` | máster | Estado completo de la mesa (el servidor lo acota y corrige) |
-| POST / DELETE | `/api/master/maps[/{id}]` | máster | Subir (`?name&width&height`, cuerpo = imagen) o borrar un mapa |
+| POST / DELETE | `/api/master/maps[/{id}]` | máster | Subir (`?name&width&height`, cuerpo = imagen o vídeo MP4/WEBM) o borrar un mapa |
 | GET | `/api/master/overview` | máster | Jugadores, conexión, estado oculto y módulos |
 | POST | `/api/master/messages` | máster | Mensaje privado (`recipientId`) o global (sin destinatario) |
 | PATCH | `/api/master/players/{id}/modules/{module}` | máster | `{locked, visible}` |

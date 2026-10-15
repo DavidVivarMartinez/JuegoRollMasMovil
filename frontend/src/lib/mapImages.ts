@@ -73,3 +73,49 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
   );
   return { blob, width: w, height: h };
 }
+
+// ---------------------------------------------------------------- vídeos (mapas animados)
+
+export const VIDEO_TYPES = ["video/mp4", "video/webm"];
+export const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+
+export function isVideoType(contentType: string | null | undefined): boolean {
+  return !!contentType && contentType.startsWith("video/");
+}
+
+/** Lee ancho y alto de un vídeo sin reproducirlo. */
+function videoSize(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.onloadedmetadata = () => {
+      const size = { width: video.videoWidth, height: video.videoHeight };
+      URL.revokeObjectURL(url);
+      if (!size.width || !size.height) reject(new Error("No se pudo leer el tamaño del vídeo"));
+      else resolve(size);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("El navegador no puede reproducir este vídeo: usa MP4 (H.264) o WEBM"));
+    };
+    video.src = url;
+  });
+}
+
+/**
+ * Prepara un mapa para subir: las imágenes se reducen si hace falta; los vídeos (MP4 o WEBM) se suben tal cual,
+ * tras comprobar formato y tamaño, porque convertirlos en el móvil sería muy lento.
+ */
+export async function prepareMedia(file: File): Promise<PreparedImage> {
+  if (!file.type.startsWith("video/")) return prepareImage(file);
+  if (!VIDEO_TYPES.includes(file.type)) {
+    throw new Error("Formato de vídeo no admitido: usa MP4 o WEBM (los .mov del iPhone no valen; expórtalos a MP4)");
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    throw new Error(`El vídeo pesa ${Math.round(file.size / 1048576)} MB: el máximo es 30 MB (prueba a recortarlo o bajar a 1080p)`);
+  }
+  const { width, height } = await videoSize(file);
+  return { blob: file, width, height };
+}

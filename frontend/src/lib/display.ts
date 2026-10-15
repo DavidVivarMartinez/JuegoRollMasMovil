@@ -75,11 +75,15 @@ export function playerToken(p: PlayerSummary, index: number): DisplayToken {
   };
 }
 
-/** Garantiza que la escena existe y que tiene la ficha de cada jugador (las nuevas aparecen abajo a la izquierda). */
+/**
+ * Garantiza que la escena existe y que tiene la ficha de cada jugador (las nuevas aparecen abajo a la izquierda).
+ * Un mapa nuevo empieza con la niebla activa y todo cubierto, para que no se vea nada que el máster no haya revelado.
+ * El plano de la estación no: ya oculta los sectores desconocidos. Al volver a un mapa se conserva lo revelado.
+ */
 export function ensureScene(state: DisplayState, key: string, players: PlayerSummary[], aspect: number): DisplayState {
   if (key === "NONE") return state;
   const existing: DisplayScene | undefined = state.scenes[key];
-  const scene: DisplayScene = existing ?? { tokens: [], fog: emptyFog(12, aspect) };
+  const scene: DisplayScene = existing ?? { tokens: [], fog: { ...emptyFog(12, aspect), enabled: key !== "STATION" } };
   const tokens = [...scene.tokens];
   players.forEach((p, i) => {
     if (!tokens.some((t) => t.playerId === p.id)) tokens.push(playerToken(p, i));

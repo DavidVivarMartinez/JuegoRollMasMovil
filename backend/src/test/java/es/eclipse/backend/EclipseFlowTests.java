@@ -402,6 +402,25 @@ class EclipseFlowTests {
         assertEquals(403, call("POST", "/api/master/display/link", david.token(), null).status());
     }
 
+    @Test
+    void videosCanBeUsedAsAnimatedMaps() throws Exception {
+        byte[] mp4 = {0, 0, 0, 24, 'f', 't', 'y', 'p', 'm', 'p', '4', '2', 9, 9, 9, 9};
+        Resp up = upload("/api/master/maps?name=Reactor%20animado&width=1920&height=1080", "video/mp4", mp4);
+        assertEquals(201, up.status(), up.body());
+        assertTrue(up.body().contains("\"contentType\":\"video/mp4\""), up.body());
+        long id = Long.parseLong(Pattern.compile("\"id\":(\\d+)").matcher(up.body()).results().findFirst().orElseThrow().group(1));
+
+        HttpResponse<byte[]> video = HTTP.send(HttpRequest.newBuilder(URI.create(base() + "/api/display/maps/" + id + "/image"))
+                .header("Authorization", "Bearer " + master.token()).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200, video.statusCode());
+        assertEquals("video/mp4", video.headers().firstValue("Content-Type").orElse(""));
+        assertTrue(java.util.Arrays.equals(mp4, video.body()));
+
+        assertEquals(201, upload("/api/master/maps?name=w&width=640&height=360", "video/webm", mp4).status());
+        assertEquals(415, upload("/api/master/maps?name=mov&width=640&height=360", "video/quicktime", mp4).status(),
+                "los .mov de iPhone no se reproducen en todos los navegadores");
+    }
+
     private Resp upload(String path, String contentType, byte[] body) throws Exception {
         HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(URI.create(base() + path))
                 .header("Authorization", "Bearer " + master.token())

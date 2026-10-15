@@ -5,7 +5,7 @@ import { api, ApiError } from "../lib/api";
 import { clearSession, loadSession } from "../lib/auth";
 import { mapIdOf, sceneAspect } from "../lib/display";
 import { useKeepAlive } from "../lib/keepAlive";
-import { useMapImage } from "../lib/mapImages";
+import { isVideoType, useMapImage } from "../lib/mapImages";
 import { useRealtime } from "../lib/realtime";
 import type { DisplayBootstrap, DisplayState, MapImage, Sector, ServerEvent, SessionDto } from "../lib/types";
 import { useWakeLock } from "../lib/wakeLock";
@@ -104,6 +104,7 @@ export default function TvScreen() {
   const sceneKey = state?.scene ?? "NONE";
   const imageUrl = useMapImage(mapIdOf(sceneKey));
   const aspect = sceneAspect(sceneKey, boot?.maps ?? []);
+  const isVideo = isVideoType(boot?.maps.find((m) => m.id === mapIdOf(sceneKey))?.contentType);
   const overlay = state?.overlay;
 
   if (!session) return null;
@@ -126,6 +127,7 @@ export default function TvScreen() {
             scene={state?.scenes[sceneKey]}
             aspect={aspect}
             imageUrl={imageUrl}
+            isVideo={isVideo}
             sectors={boot.sectors}
             variant="tv"
           />

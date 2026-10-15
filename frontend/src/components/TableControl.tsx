@@ -9,7 +9,7 @@ import {
   sceneAspect,
   TOKEN_PALETTE,
 } from "../lib/display";
-import { prepareImage, useMapImage } from "../lib/mapImages";
+import { isVideoType, prepareMedia, useMapImage } from "../lib/mapImages";
 import { canPickScreens, listScreens, openTvWindow, type ScreenInfo } from "../lib/screens";
 import type { DisplayFog, DisplayScene, DisplayState, MapImage, OverlayType, PlayerSummary, Sector } from "../lib/types";
 import { Chip } from "./ContentManagers";
@@ -134,7 +134,7 @@ export default function TableControl({
   const upload = async (file: File) => {
     setUploading(true);
     try {
-      const prepared = await prepareImage(file);
+      const prepared = await prepareMedia(file);
       const name = file.name.replace(/\.[^.]+$/, "").slice(0, 80) || "Mapa";
       const map = await api.master.uploadMap(prepared.blob, name, prepared.width, prepared.height);
       onMapsChanged();
@@ -178,6 +178,7 @@ export default function TableControl({
           </Chip>
           {maps.map((m) => (
             <Chip key={m.id} small active={sceneKey === `MAP:${m.id}`} onClick={() => goScene(`MAP:${m.id}`)}>
+              {isVideoType(m.contentType) ? "▶ " : ""}
               {m.name.toUpperCase()}
             </Chip>
           ))}
@@ -188,12 +189,12 @@ export default function TableControl({
             className="flex min-h-[36px] shrink-0 items-center gap-1.5 rounded border border-dashed border-term-green/70 px-2.5 text-[10px] tracking-widest disabled:opacity-40"
           >
             <Icon name="upload" className="h-3.5 w-3.5" />
-            {uploading ? "SUBIENDO…" : "SUBIR MAPA"}
+            {uploading ? "SUBIENDO…" : "SUBIR MAPA / VÍDEO"}
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
@@ -215,6 +216,7 @@ export default function TableControl({
             scene={scene}
             aspect={aspect}
             imageUrl={imageUrl}
+            isVideo={isVideoType(maps.find((m) => m.id === mapIdOf(sceneKey))?.contentType)}
             sectors={sectors}
             variant="master"
             fit="width"
@@ -420,7 +422,8 @@ export default function TableControl({
                 <div className="min-w-0">
                   <div className="truncate text-sm">{m.name}</div>
                   <div className="text-[9px] tracking-widest text-term-dim">
-                    {m.width}×{m.height} · {Math.round(m.sizeBytes / 1024)} KB
+                    {isVideoType(m.contentType) ? "VÍDEO · " : ""}
+                    {m.width}×{m.height} · {m.sizeBytes >= 1048576 ? `${(m.sizeBytes / 1048576).toFixed(1)} MB` : `${Math.round(m.sizeBytes / 1024)} KB`}
                   </div>
                 </div>
                 <button

@@ -66,7 +66,8 @@ public class DisplayController {
     }
 
     /** Cuerpo = bytes de la imagen (ya redimensionada en el móvil). Ancho y alto los calcula el cliente. */
-    @PostMapping(value = "/api/master/maps", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, "image/webp"})
+    @PostMapping(value = "/api/master/maps",
+            consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, "image/webp", "video/mp4", "video/webm"})
     @PreAuthorize("hasRole('MASTER')")
     @ResponseStatus(HttpStatus.CREATED)
     public MapImageDto upload(@AuthenticationPrincipal EclipsePrincipal me,

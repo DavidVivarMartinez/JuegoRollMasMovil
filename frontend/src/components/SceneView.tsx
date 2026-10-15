@@ -12,6 +12,8 @@ interface Props {
   /** ancho / alto de la escena */
   aspect: number;
   imageUrl: string | null;
+  /** el mapa es un vídeo (MP4/WEBM): se reproduce en bucle y sin sonido */
+  isVideo?: boolean;
   sectors: Sector[];
   /** tv: solo mostrar, niebla opaca · master: interactivo, niebla translúcida para ver debajo */
   variant: "tv" | "master";
@@ -50,6 +52,7 @@ export default function SceneView({
   scene,
   aspect,
   imageUrl,
+  isVideo = false,
   sectors,
   variant,
   fit = "contain",
@@ -204,7 +207,19 @@ export default function SceneView({
           )}
           {sceneKey.startsWith("MAP:") &&
             (imageUrl ? (
-              <img src={imageUrl} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />
+              isVideo ? (
+                <video
+                  src={imageUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  disablePictureInPicture
+                  className="pointer-events-none absolute inset-0 h-full w-full object-fill"
+                />
+              ) : (
+                <img src={imageUrl} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />
+              )
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-xs tracking-widest text-term-dim">
                 CARGANDO MAPA<span className="blink">_</span>
@@ -217,6 +232,7 @@ export default function SceneView({
               className="pointer-events-none absolute inset-0 h-full w-full"
               viewBox={`0 0 ${fog.cols} ${fog.rows}`}
               preserveAspectRatio="none"
+              overflow="visible"
             >
               {variant === "tv" && (
                 <defs>
@@ -227,18 +243,25 @@ export default function SceneView({
               )}
               <g filter={variant === "tv" ? "url(#fog-blur)" : undefined}>
                 {Array.from({ length: fog.rows }, (_, r) =>
-                  Array.from({ length: fog.cols }, (_, c) =>
-                    isRevealed(fog, c, r) ? null : (
+                  Array.from({ length: fog.cols }, (_, c) => {
+                    if (isRevealed(fog, c, r)) return null;
+                    // las casillas del borde se alargan hacia fuera: el difuminado queda fuera de la pantalla
+                    // (recortado por el contenedor) y no deja ver el filo del mapa
+                    const x0 = c === 0 ? -1 : c - 0.02;
+                    const y0 = r === 0 ? -1 : r - 0.02;
+                    const x1 = c === fog.cols - 1 ? fog.cols + 1 : c + 1.02;
+                    const y1 = r === fog.rows - 1 ? fog.rows + 1 : r + 1.02;
+                    return (
                       <rect
                         key={`${c}-${r}`}
-                        x={c - 0.02}
-                        y={r - 0.02}
-                        width={1.04}
-                        height={1.04}
+                        x={x0}
+                        y={y0}
+                        width={x1 - x0}
+                        height={y1 - y0}
                         fill={variant === "tv" ? "#020304" : "rgba(4,10,18,0.74)"}
                       />
-                    ),
-                  ),
+                    );
+                  }),
                 )}
               </g>
               {variant === "master" &&
